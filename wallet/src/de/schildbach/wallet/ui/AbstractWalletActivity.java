@@ -111,6 +111,6 @@ public abstract class AbstractWalletActivity extends SherlockFragmentActivity
 		final long now = System.currentTimeMillis();
 		prefs.edit().putLong(Constants.PREFS_KEY_LAST_USED, now).commit();
 
-		log.info("just being used - last used {} minutes ago", (now - prefsLastUsed) / DateUtils.MINUTE_IN_MILLIS);
+		//log.info("just being used - last used {} minutes ago", (now - prefsLastUsed) / DateUtils.MINUTE_IN_MILLIS);
 	}
 }

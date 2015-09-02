@@ -99,7 +99,7 @@ public final class AcceptBluetoothService extends Service
 				try
 				{
 					final Transaction tx = new Transaction(Constants.NETWORK_PARAMETERS, msg);
-					log.info("tx " + tx.getHashAsString() + " arrived via blueooth");
+					//log.info("tx " + tx.getHashAsString() + " arrived via blueooth");
 
 					try
 					{
@@ -118,19 +118,19 @@ public final class AcceptBluetoothService extends Service
 						}
 						else
 						{
-							log.info("tx " + tx.getHashAsString() + " irrelevant");
+							//log.info("tx " + tx.getHashAsString() + " irrelevant");
 						}
 
 						return true;
 					}
 					catch (final VerificationException x)
 					{
-						log.info("cannot verify tx " + tx.getHashAsString() + " received via bluetooth", x);
+						//log.info("cannot verify tx " + tx.getHashAsString() + " received via bluetooth", x);
 					}
 				}
 				catch (final ProtocolException x)
 				{
-					log.info("cannot decode message received via bluetooth", x);
+					//log.info("cannot decode message received via bluetooth", x);
 				}
 
 				return false;
@@ -153,7 +153,7 @@ public final class AcceptBluetoothService extends Service
 
 		super.onDestroy();
 
-		log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
+		//log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
 	}
 
 	private final BroadcastReceiver bluetoothStateChangeReceiver = new BroadcastReceiver()
@@ -165,7 +165,7 @@ public final class AcceptBluetoothService extends Service
 
 			if (state == BluetoothAdapter.STATE_TURNING_OFF || state == BluetoothAdapter.STATE_OFF)
 			{
-				log.info("bluetooth was turned off, stopping service");
+				//log.info("bluetooth was turned off, stopping service");
 
 				stopSelf();
 			}
@@ -177,7 +177,7 @@ public final class AcceptBluetoothService extends Service
 		@Override
 		public void run()
 		{
-			log.info("timeout expired, stopping service");
+			//log.info("timeout expired, stopping service");
 
 			stopSelf();
 		}

@@ -241,12 +241,12 @@ public final class ScanActivity extends Activity implements SurfaceHolder.Callba
 			}
 			catch (final IOException x)
 			{
-				log.info("problem opening camera", x);
+				//log.info("problem opening camera", x);
 				showDialog(DIALOG_CAMERA_PROBLEM);
 			}
 			catch (final RuntimeException x)
 			{
-				log.info("problem opening camera", x);
+				//log.info("problem opening camera", x);
 				showDialog(DIALOG_CAMERA_PROBLEM);
 			}
 		}

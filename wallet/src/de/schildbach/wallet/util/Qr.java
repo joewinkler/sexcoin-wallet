@@ -78,7 +78,7 @@ public class Qr
 		}
 		catch (final WriterException x)
 		{
-			log.info("problem creating qr code", x);
+			//log.info("problem creating qr code", x);
 			return null;
 		}
 	}

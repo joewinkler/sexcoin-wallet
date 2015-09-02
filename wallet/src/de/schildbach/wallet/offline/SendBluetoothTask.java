@@ -61,7 +61,7 @@ public abstract class SendBluetoothTask
 			@Override
 			public void run()
 			{
-				log.info("trying to send tx " + transaction.getHashAsString() + " via bluetooth");
+				//log.info("trying to send tx " + transaction.getHashAsString() + " via bluetooth");
 
 				final byte[] serializedTx = transaction.unsafeBitcoinSerialize();
 
@@ -83,11 +83,11 @@ public abstract class SendBluetoothTask
 					os.write(serializedTx);
 					os.flush();
 
-					log.info("tx " + transaction.getHashAsString() + " sent via bluetooth");
+					//log.info("tx " + transaction.getHashAsString() + " sent via bluetooth");
 
 					final boolean ack = is.readBoolean();
 
-					log.info("received " + (ack ? "ack" : "nack"));
+					//log.info("received " + (ack ? "ack" : "nack"));
 
 					callbackHandler.post(new Runnable()
 					{
@@ -100,7 +100,7 @@ public abstract class SendBluetoothTask
 				}
 				catch (final IOException x)
 				{
-					log.info("problem sending", x);
+					//log.info("problem sending", x);
 				}
 				finally
 				{

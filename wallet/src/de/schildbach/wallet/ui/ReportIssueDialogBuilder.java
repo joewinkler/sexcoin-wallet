@@ -187,7 +187,7 @@ public abstract class ReportIssueDialogBuilder extends AlertDialog.Builder imple
 			}
 			catch (final IOException x)
 			{
-				log.info("problem writing attachment", x);
+				//log.info("problem writing attachment", x);
 			}
 		}
 
@@ -212,7 +212,7 @@ public abstract class ReportIssueDialogBuilder extends AlertDialog.Builder imple
 			}
 			catch (final IOException x)
 			{
-				log.info("problem writing attachment", x);
+				//log.info("problem writing attachment", x);
 			}
 		}
 

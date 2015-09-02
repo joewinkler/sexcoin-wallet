@@ -1325,7 +1325,7 @@ public final class SendCoinsFragment extends SherlockFragment
 		{
 			receivingAddressView.setText(receivingAddress);
 			validatedAddress = null;
-			log.info("problem parsing address: '" + receivingAddress + "'", x);
+			//log.info("problem parsing address: '" + receivingAddress + "'", x);
 		}
 
 		if (amount != null)

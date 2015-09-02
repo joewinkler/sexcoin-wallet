@@ -230,7 +230,7 @@ public final class ImportKeysActivity extends AbstractWalletActivity
 			dialog.setOnCancelListener(finishListener);
 			dialog.show();
 
-			log.info("imported " + numKeysImported + " of " + numKeysToImport + " private keys");
+			//log.info("imported " + numKeysImported + " of " + numKeysToImport + " private keys");
 		}
 		catch (final IOException x)
 		{
@@ -239,7 +239,7 @@ public final class ImportKeysActivity extends AbstractWalletActivity
 					.setMessage(getString(R.string.import_keys_dialog_failure, x.getMessage()))
 					.setNeutralButton(R.string.button_dismiss, finishListener).setOnCancelListener(finishListener).show();
 
-			log.info("problem reading private keys", x);
+			//log.info("problem reading private keys", x);
 		}
 	}
 

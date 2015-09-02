@@ -316,11 +316,11 @@ public class ExchangeRatesProvider extends ContentProvider
 				reader = new InputStreamReader(new BufferedInputStream(connection.getInputStream(), 4096), Constants.UTF_8);
 				final StringBuilder content = new StringBuilder();
 				Io.copy(reader, content);
-				//log.info("RETURN FROM JSON: " + content.toString());
+				////log.info("RETURN FROM JSON: " + content.toString());
 				final Map<String, ExchangeRate> rates = new TreeMap<String, ExchangeRate>();
 
 				final JSONObject head = new JSONObject(content.toString());
-				//log.info("JSON 0: " + head.toString(4));
+				////log.info("JSON 0: " + head.toString(4));
 				
 				for (final Iterator<String> i = head.keys(); i.hasNext();)
 				{
@@ -353,7 +353,7 @@ public class ExchangeRatesProvider extends ContentProvider
 					}
 				}
 
-				log.info("fetched exchange rates from " + url);
+				//log.info("fetched exchange rates from " + url);
 
 				return rates;
 			}
@@ -392,9 +392,9 @@ public class ExchangeRatesProvider extends ContentProvider
 	{
 		HttpURLConnection connection = null;
 		Reader reader = null;
-		log.info("Currency code = " + currencyCode);
-		log.info("fields " + Arrays.toString(fields));
-		log.info("RETRIEVING " + url.toString());
+		//log.info("Currency code = " + currencyCode);
+		//log.info("fields " + Arrays.toString(fields));
+		//log.info("RETRIEVING " + url.toString());
 		BigInteger sxcrate;
 		try
 		{
@@ -423,16 +423,16 @@ public class ExchangeRatesProvider extends ContentProvider
 					{
 						if(fields[0].equals("BTC")){
 							sxcrate = getSexcoinRate(CRYPTSY_SXCBTC_URL);
-							log.info("sxcrate(btc) = " + sxcrate);
+							//log.info("sxcrate(btc) = " + sxcrate);
 						}else{
 							sxcrate = getSexcoinRate(CRYPTSY_SXCLTC_URL);
-							log.info("sxcrate(ltc) = " + sxcrate);
+							//log.info("sxcrate(ltc) = " + sxcrate);
 						}
-						log.info("rate = " + rate);
+						//log.info("rate = " + rate);
 						double cRate = rate.doubleValue() / 100000000;
 						double sRate = sxcrate.doubleValue() / 100000000;
 						double tRate = cRate * sRate;
-						log.info("converted rate = " + tRate);
+						//log.info("converted rate = " + tRate);
 						String nRate = "" + tRate;
 						
 						rate = GenericUtils.toNanoCoinsRounded(nRate, 0);
@@ -477,7 +477,7 @@ public class ExchangeRatesProvider extends ContentProvider
 	private static BigInteger getSexcoinRate ( URL url ){
 		HttpURLConnection connection = null;
 		Reader reader = null;
-		log.info("RETRIEVING " + url.toString());
+		//log.info("RETRIEVING " + url.toString());
 		try
 		{
 			connection = (HttpURLConnection) url.openConnection();
@@ -544,9 +544,9 @@ public class ExchangeRatesProvider extends ContentProvider
 		for(int i=0; i< numStrings ; i++){
 			end = lineLength*i + lineLength;
 			if( end > len ) { end = len; }
-			log.info("--" + msg.substring(lineLength*i,end));
+			//log.info("--" + msg.substring(lineLength*i,end));
 		}
-		log.info("<<");		
+		//log.info("<<");		
 	}
 	private static void logBigString(String msg){
 		logBigString(msg,80);

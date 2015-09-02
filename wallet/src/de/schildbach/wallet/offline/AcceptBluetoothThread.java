@@ -89,7 +89,7 @@ public abstract class AcceptBluetoothThread extends Thread
 			}
 			catch (final IOException x)
 			{
-				log.info("exception in bluetooth accept loop", x);
+				//log.info("exception in bluetooth accept loop", x);
 			}
 			finally
 			{

@@ -364,21 +364,21 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			if (ConnectivityManager.CONNECTIVITY_ACTION.equals(action))
 			{
 				hasConnectivity = !intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false);
-				log.info("network is " + (hasConnectivity ? "up" : "down"));
+				//log.info("network is " + (hasConnectivity ? "up" : "down"));
 
 				check();
 			}
 			else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action))
 			{
 				hasStorage = false;
-				log.info("device storage low");
+				//log.info("device storage low");
 
 				check();
 			}
 			else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action))
 			{
 				hasStorage = true;
-				log.info("device storage ok");
+				//log.info("device storage ok");
 
 				check();
 			}
@@ -392,7 +392,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 			if (hasEverything && peerGroup == null)
 			{
-				log.info("acquiring wakelock");
+				//log.info("acquiring wakelock");
 				wakeLock.acquire();
 
 				// consistency check
@@ -405,7 +405,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 					CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfo());
 				}
 
-				log.info("starting peergroup");
+				//log.info("starting peergroup");
 				peerGroup = new PeerGroup(Constants.NETWORK_PARAMETERS, blockChain);
 				peerGroup.addWallet(wallet);
 				peerGroup.setUserAgent(Constants.USER_AGENT, application.packageInfo().versionName);
@@ -429,7 +429,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 					@Override
 					public InetSocketAddress[] getPeers(final long timeoutValue, final TimeUnit timeoutUnit) throws PeerDiscoveryException
 					{
-						log.info("in getPeers...");
+						//log.info("in getPeers...");
 						try {
                             dbPeerDiscovery = new SexcoinPeerDBDiscovery(Constants.NETWORK_PARAMETERS,
                                     getFileStreamPath("sexcoin.peerdb"), peerGroup);
@@ -443,7 +443,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 						if (hasTrustedPeer)
 						{
-							log.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
+							//log.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
 
 							final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, Constants.NETWORK_PARAMETERS.getPort());
 							if (addr.getAddress() != null)
@@ -467,14 +467,14 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 							while (peers.size() >= maxConnectedPeers)
 								peers.remove(peers.size() - 1);
 
-						log.info("out: getPeers found {}",peers.size());
+						//log.info("out: getPeers found {}",peers.size());
 						return peers.toArray(new InetSocketAddress[peers.size()]);
 					}
 
 					@Override
 					public void shutdown()
 					{
-						log.info("Shutting down PeerDiscovery...");
+						//log.info("Shutting down PeerDiscovery...");
 						normalPeerDiscovery.shutdown();
                         //if(dbPeerDiscovery != null)
                         //    dbPeerDiscovery.shutdown();
@@ -482,14 +482,14 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				});
 
 				// start peergroup
-				log.info("Starting Peergroup...");
+				//log.info("Starting Peergroup...");
 				//CheckpointManager manager = new CheckpointManager(params,peerGroup.get) --- WHERE do we do this!! Lj
 				peerGroup.start();
 				peerGroup.startBlockChainDownload(blockchainDownloadListener);
 			}
 			else if (!hasEverything && peerGroup != null)
 			{
-				log.info("stopping peergroup");
+				//log.info("stopping peergroup");
 				peerGroup.removeEventListener(peerConnectivityListener);
 				peerGroup.removeWallet(wallet);
 				peerGroup.stop();
@@ -554,7 +554,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 						builder.append(", ");
 					builder.append(entry);
 				}
-				log.info("History of transactions/blocks: " + builder);
+				//log.info("History of transactions/blocks: " + builder);
 
 				// determine if block and transaction activity is idling
 				boolean isIdle = false;
@@ -578,7 +578,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				// if idling, shutdown service
 				if (isIdle)
 				{
-					log.info("idling detected, stopping service");
+					//log.info("idling detected, stopping service");
 					stopSelf();
 				}
 			}
@@ -649,7 +649,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 		if (!blockChainFileExists)
 		{
-			log.info("blockchain does not exist, resetting wallet");
+			//log.info("blockchain does not exist, resetting wallet");
 
 			wallet.clearTransactions(0);
 			wallet.setLastBlockSeenHeight(-1); // magic value
@@ -669,7 +669,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				{
 					final InputStream checkpointsInputStream = getAssets().open(Constants.CHECKPOINTS_FILENAME);
 					CheckpointManager.checkpoint(Constants.NETWORK_PARAMETERS, checkpointsInputStream, blockStore, earliestKeyCreationTime);
-					log.info("...Checkpoints file found and defined...");
+					//log.info("...Checkpoints file found and defined...");
 				}
 				catch (final IOException x)
 				{
@@ -686,7 +686,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			throw new Error(msg, x);
 		}
 
-		log.info("using " + blockStore.getClass().getName());
+		//log.info("using " + blockStore.getClass().getName());
 
 		try
 		{
@@ -695,7 +695,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			final InputStream checkpointsInputStream = getAssets().open(Constants.CHECKPOINTS_FILENAME);
 
 			CheckpointManager.checkpoint(Constants.NETWORK_PARAMETERS, checkpointsInputStream, blockStore, earliestKeyCreationTime);
-			log.info("...Checkpoints file found and defined...");
+			//log.info("...Checkpoints file found and defined...");
 		}catch(IOException e){
 			e.printStackTrace();
 			log.error("couldn't do something involving the checkpoint manager or Input Stream");
@@ -715,7 +715,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId)
 	{
-		log.info("service start command: " + intent
+		//log.info("service start command: " + intent
 				+ (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
 
 		final String action = intent.getAction();
@@ -730,7 +730,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 		}
 		else if (BlockchainService.ACTION_RESET_BLOCKCHAIN.equals(action))
 		{
-			log.info("will remove blockchain on service shutdown");
+			//log.info("will remove blockchain on service shutdown");
 
 			resetBlockchainOnShutdown = true;
 			stopSelf();
@@ -742,12 +742,12 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 			if (peerGroup != null)
 			{
-				log.info("broadcasting transaction " + tx.getHashAsString());
+				//log.info("broadcasting transaction " + tx.getHashAsString());
 				peerGroup.broadcastTransaction(tx);
 			}
 			else
 			{
-				log.info("peergroup not available, not broadcasting transaction " + tx.getHashAsString());
+				//log.info("peergroup not available, not broadcasting transaction " + tx.getHashAsString());
 			}
 		}
 
@@ -771,7 +771,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			peerGroup.removeWallet(application.getWallet());
 			peerGroup.stopAndWait();
 
-			log.info("peergroup stopped");
+			//log.info("peergroup stopped");
 		}
 
 		peerConnectivityListener.stop();
@@ -804,13 +804,13 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 		if (resetBlockchainOnShutdown)
 		{
-			log.info("removing blockchain");
+			//log.info("removing blockchain");
 			blockChainFile.delete();
 		}
 
 		super.onDestroy();
 
-		log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
+		//log.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
 	}
 
 	@Override

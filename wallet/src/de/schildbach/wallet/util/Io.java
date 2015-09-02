@@ -73,7 +73,7 @@ public class Io
 		}
 		catch (final Exception x)
 		{
-			log.info("problem using undocumented chmod api", x);
+			//log.info("problem using undocumented chmod api", x);
 		}
 	}
 }

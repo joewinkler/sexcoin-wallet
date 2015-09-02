@@ -124,7 +124,7 @@ public final class CameraManager
 				}
 				catch (final RuntimeException x2)
 				{
-					log.info("problem setting camera parameters", x2);
+					//log.info("problem setting camera parameters", x2);
 				}
 			}
 		}

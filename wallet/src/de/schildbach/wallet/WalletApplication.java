@@ -113,7 +113,7 @@ public class WalletApplication extends Application
 
 		Threading.throwOnLockCycles();
 
-		log.info("configuration: " + (Constants.TEST ? "test" : "prod") + ", " + Constants.NETWORK_PARAMETERS.getId());
+		//log.info("configuration: " + (Constants.TEST ? "test" : "prod") + ", " + Constants.NETWORK_PARAMETERS.getId());
 
 		super.onCreate();
 
@@ -133,7 +133,7 @@ public class WalletApplication extends Application
 			@Override
 			public void uncaughtException(final Thread thread, final Throwable throwable)
 			{
-				log.info("bitcoinj uncaught exception", throwable);
+				//log.info("bitcoinj uncaught exception", throwable);
 				CrashReporter.saveBackgroundTrace(throwable, packageInfo);
 			}
 		};
@@ -157,13 +157,13 @@ public class WalletApplication extends Application
 		prefs.edit().putInt(Constants.PREFS_KEY_LAST_VERSION, packageInfo.versionCode).commit();
 
 		if (packageInfo.versionCode > lastVersionCode)
-			log.info("detected app upgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
+			//log.info("detected app upgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
 		else if (packageInfo.versionCode < lastVersionCode)
 			log.warn("detected app downgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
 
 		if (lastVersionCode > 0 && lastVersionCode < KEY_ROTATION_VERSION_CODE && packageInfo.versionCode >= KEY_ROTATION_VERSION_CODE)
 		{
-			log.info("detected version jump crossing key rotation");
+			//log.info("detected version jump crossing key rotation");
 			wallet.setKeyRotationTime(System.currentTimeMillis() / 1000);
 		}
 
@@ -246,7 +246,7 @@ public class WalletApplication extends Application
 
 		if (oldWalletFile.exists())
 		{
-			log.info("found wallet to migrate");
+			//log.info("found wallet to migrate");
 
 			final long start = System.currentTimeMillis();
 
@@ -261,7 +261,7 @@ public class WalletApplication extends Application
 				// delete
 				oldWalletFile.delete();
 
-				log.info("wallet migrated: '" + oldWalletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
+				//log.info("wallet migrated: '" + oldWalletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
 			}
 			catch (final IOException x)
 			{
@@ -296,7 +296,7 @@ public class WalletApplication extends Application
                     throw new UnreadableWalletException("Could not parse input stream to protobuf", e);
                 }
 
-				log.info("wallet loaded from: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
+				//log.info("wallet loaded from: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
 			}
 			catch (final FileNotFoundException x)
 			{
@@ -343,7 +343,7 @@ public class WalletApplication extends Application
 		{
 			wallet = new SexcoinWallet(Constants.NETWORK_PARAMETERS);
 
-			log.info("new wallet created");
+			//log.info("new wallet created");
 		}
 
 		// this check is needed so encrypted wallets won't get their private keys removed accidently
@@ -362,7 +362,7 @@ public class WalletApplication extends Application
 
 			Toast.makeText(this, R.string.toast_wallet_reset, Toast.LENGTH_LONG).show();
 
-			log.info("wallet restored from backup: '" + Constants.WALLET_KEY_BACKUP_BASE58 + "'");
+			//log.info("wallet restored from backup: '" + Constants.WALLET_KEY_BACKUP_BASE58 + "'");
 
 			return wallet;
 		}
@@ -391,7 +391,7 @@ public class WalletApplication extends Application
 			if (!wallet.isKeyRotating(key))
 				return; // found
 
-		log.info("wallet has no usable key - creating");
+		//log.info("wallet has no usable key - creating");
 		addNewKeyToWallet();
 	}
 
@@ -558,7 +558,7 @@ public class WalletApplication extends Application
 		else
 			alarmInterval = AlarmManager.INTERVAL_DAY;
 
-		log.info("last used {} minutes ago, rescheduling blockchain sync in roughly {} minutes", lastUsedAgo / DateUtils.MINUTE_IN_MILLIS,
+		//log.info("last used {} minutes ago, rescheduling blockchain sync in roughly {} minutes", lastUsedAgo / DateUtils.MINUTE_IN_MILLIS,
 				alarmInterval / DateUtils.MINUTE_IN_MILLIS);
 
 		final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

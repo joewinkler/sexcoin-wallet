@@ -185,7 +185,7 @@ public final class PreferencesActivity extends SherlockPreferenceActivity implem
 				@Override
 				public void onClick(final DialogInterface dialog, final int which)
 				{
-					log.info("manually initiated blockchain reset");
+					//log.info("manually initiated blockchain reset");
 
 					application.resetBlockchain();
 					finish();

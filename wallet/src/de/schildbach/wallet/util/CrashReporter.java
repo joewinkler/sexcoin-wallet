@@ -325,7 +325,7 @@ public class CrashReporter
 			}
 			catch (final IOException x)
 			{
-				log.info("problem writing crash trace", x);
+				//log.info("problem writing crash trace", x);
 			}
 
 			previousHandler.uncaughtException(t, exception);

@@ -628,7 +628,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 			{
 				final int serverVersionCode = Integer.parseInt(line.split("\\s+")[0]);
 
-				log.info("according to \"" + url + "\", strongly recommended minimum app version is " + serverVersionCode);
+				//log.info("according to \"" + url + "\", strongly recommended minimum app version is " + serverVersionCode);
 
 				if (serverTime > 0)
 				{
@@ -636,7 +636,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 
 					if (diffMinutes >= 60)
 					{
-						log.info("according to \"" + url + "\", system clock is off by " + diffMinutes + " minutes");
+						//log.info("according to \"" + url + "\", system clock is off by " + diffMinutes + " minutes");
 
 						runOnUiThread(new Runnable()
 						{
@@ -694,7 +694,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 			}
 			catch (final IOException x)
 			{
-				log.info("problem appending crash info", x);
+				//log.info("problem appending crash info", x);
 			}
 
 			final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(this, R.string.report_issue_dialog_title_crash,
@@ -899,7 +899,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 			}
 			dialog.show();
 
-			log.info("imported " + numKeysImported + " of " + numKeysToImport + " private keys");
+			//log.info("imported " + numKeysImported + " of " + numKeysToImport + " private keys");
 		}
 		catch (final IOException x)
 		{
@@ -908,7 +908,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 					.setMessage(getString(R.string.import_keys_dialog_failure, x.getMessage())).setNeutralButton(R.string.button_dismiss, null)
 					.show();
 
-			log.info("problem reading private keys", x);
+			//log.info("problem reading private keys", x);
 		}
 	}
 
@@ -953,7 +953,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 			dialog.setNegativeButton(R.string.button_dismiss, null);
 			dialog.show();
 
-			log.info("exported " + keys.size() + " private keys to " + file);
+			//log.info("exported " + keys.size() + " private keys to " + file);
 		}
 		catch (final IOException x)
 		{
@@ -983,7 +983,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
 		startActivity(Intent.createChooser(intent, getString(R.string.export_keys_dialog_mail_intent_chooser)));
 
-		log.info("invoked archive private keys chooser");
+		//log.info("invoked archive private keys chooser");
 	}
 	
 	public void popMessage(String title,String message){
