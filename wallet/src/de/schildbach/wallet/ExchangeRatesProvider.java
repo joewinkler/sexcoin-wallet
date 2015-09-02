@@ -346,7 +346,7 @@ public class ExchangeRatesProvider extends ContentProvider
 								}
 								catch (final ArithmeticException x)
 								{
-									log.warn("problem fetching exchange rate: " + currencyCode, x);
+									//log.warn("problem fetching exchange rate: " + currencyCode, x);
 								}
 							}
 						}
@@ -359,12 +359,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				log.warn("http status " + responseCode + " when fetching " + url);
+				//log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			log.warn("problem fetching exchange rates", x);
+			//log.warn("problem fetching exchange rates", x);
 		}
 		finally
 		{
@@ -446,12 +446,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				log.warn("http status " + responseCode + " when fetching " + url);
+				//log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			log.warn("problem fetching exchange rates", x);
+			//log.warn("problem fetching exchange rates", x);
 		}
 		finally
 		{
@@ -507,12 +507,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				log.warn("http status " + responseCode + " when fetching " + url);
+				//log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			log.warn("problem fetching sxc exchange rates", x);
+			//log.warn("problem fetching sxc exchange rates", x);
 		}
 		finally
 		{

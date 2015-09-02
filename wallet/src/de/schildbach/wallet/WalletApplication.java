@@ -156,10 +156,10 @@ public class WalletApplication extends Application
 		final int lastVersionCode = prefs.getInt(Constants.PREFS_KEY_LAST_VERSION, 0);
 		prefs.edit().putInt(Constants.PREFS_KEY_LAST_VERSION, packageInfo.versionCode).commit();
 
-		if (packageInfo.versionCode > lastVersionCode)
+		//if (packageInfo.versionCode > lastVersionCode)
 			//log.info("detected app upgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
-		else if (packageInfo.versionCode < lastVersionCode)
-			log.warn("detected app downgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
+		//else if (packageInfo.versionCode < lastVersionCode)
+			////log.warn("detected app downgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
 
 		if (lastVersionCode > 0 && lastVersionCode < KEY_ROTATION_VERSION_CODE && packageInfo.versionCode >= KEY_ROTATION_VERSION_CODE)
 		{
@@ -559,7 +559,7 @@ public class WalletApplication extends Application
 			alarmInterval = AlarmManager.INTERVAL_DAY;
 
 		//log.info("last used {} minutes ago, rescheduling blockchain sync in roughly {} minutes", lastUsedAgo / DateUtils.MINUTE_IN_MILLIS,
-				alarmInterval / DateUtils.MINUTE_IN_MILLIS);
+		//		alarmInterval / DateUtils.MINUTE_IN_MILLIS);
 
 		final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		final PendingIntent alarmIntent = PendingIntent.getService(context, 0, new Intent(context, BlockchainServiceImpl.class), 0);

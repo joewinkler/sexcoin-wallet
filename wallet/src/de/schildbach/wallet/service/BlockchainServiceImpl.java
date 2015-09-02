@@ -716,7 +716,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	public int onStartCommand(final Intent intent, final int flags, final int startId)
 	{
 		//log.info("service start command: " + intent
-				+ (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
+		//		+ (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
 
 		final String action = intent.getAction();
 
@@ -816,7 +816,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public void onLowMemory()
 	{
-		log.warn("low memory detected, stopping service");
+		//log.warn("low memory detected, stopping service");
 		stopSelf();
 	}
 
@@ -908,7 +908,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 		}
 		catch (final RuntimeException x) // system server dead?
 		{
-			log.warn("cannot update app widgets", x);
+			//log.warn("cannot update app widgets", x);
 		}
 	}
 

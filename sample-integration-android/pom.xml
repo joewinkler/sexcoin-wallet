@@ -6,7 +6,6 @@
 
 	<artifactId>sample-integration-android</artifactId>
 	<packaging>apk</packaging>
-	<version>1.0</version>
 	<name>Sample for Sexcoin Integration for Android</name>
 
 	<parent>
@@ -76,4 +75,10 @@
 		</plugins>
 	</build>
 
+	<groupId>de.schildbach.wallet_sxc</groupId>
+	<url>sexcoin.co.in</url>
+	<organization>
+		<name>SexCoin Developer</name>
+		<url>sexcoin.co.in</url>
+	</organization>
 </project>

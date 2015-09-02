@@ -6,7 +6,6 @@
 
 	<artifactId>integration-android</artifactId>
 	<packaging>apklib</packaging>
-	<version>1.0</version>
 	<name>Bitcoin Integration for Android</name>
 
 	<parent>
@@ -50,4 +49,10 @@
 		</plugins>
 	</build>
 
+	<groupId>de.schildbach.wallet_sxc</groupId>
+	<url>sexcoin.co.in</url>
+	<organization>
+		<name>SexCoin Developer</name>
+		<url>sexcoin.co.in</url>
+	</organization>
 </project>
