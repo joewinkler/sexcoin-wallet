@@ -674,7 +674,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 				if (x instanceof UnknownHostException || x instanceof SocketException || x instanceof SocketTimeoutException)
 				{
 					// swallow
-					log.debug("problem reading", x);
+					//log.debug("problem reading", x);
 				}
 				else
 				{
@@ -962,7 +962,7 @@ public final class WalletActivity extends AbstractOnDemandServiceActivity
 					.setMessage(getString(R.string.export_keys_dialog_failure, x.getMessage())).setNeutralButton(R.string.button_dismiss, null)
 					.show();
 
-			log.error("problem writing private keys", x);
+			//log.error("problem writing private keys", x);
 		}
 	}
 

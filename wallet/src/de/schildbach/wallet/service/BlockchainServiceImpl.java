@@ -401,7 +401,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				if (walletLastBlockSeenHeight != -1 && walletLastBlockSeenHeight != bestChainHeight)
 				{
 					final String message = "wallet/blockchain out of sync: " + walletLastBlockSeenHeight + "/" + bestChainHeight;
-					log.error(message);
+					//log.error(message);
 					CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfo());
 				}
 
@@ -495,7 +495,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				peerGroup.stop();
 				peerGroup = null;
 
-				log.debug("releasing wakelock");
+				//log.debug("releasing wakelock");
 				wakeLock.release();
 			}
 
@@ -600,7 +600,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public IBinder onBind(final Intent intent)
 	{
-		log.debug(".onBind()");
+		//log.debug(".onBind()");
 
 		return mBinder;
 	}
@@ -608,7 +608,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public boolean onUnbind(final Intent intent)
 	{
-		log.debug(".onUnbind()");
+		//log.debug(".onUnbind()");
 
 		return super.onUnbind(intent);
 	}
@@ -617,7 +617,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	public void onCreate()
 	{
 		serviceCreatedAt = System.currentTimeMillis();
-		log.debug(".onCreate()");
+		//log.debug(".onCreate()");
 
 		super.onCreate();
 
@@ -673,7 +673,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 				}
 				catch (final IOException x)
 				{
-					log.error("problem reading checkpoints, continuing without", x);
+					//log.error("problem reading checkpoints, continuing without", x);
 				}
 			}
 		}
@@ -682,7 +682,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			blockChainFile.delete();
 
 			final String msg = "blockstore cannot be created, [" + blockChainFile.getPath() + "]";
-			log.error(msg, x);
+			//log.error(msg, x);
 			throw new Error(msg, x);
 		}
 
@@ -698,7 +698,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 			//log.info("...Checkpoints file found and defined...");
 		}catch(IOException e){
 			e.printStackTrace();
-			log.error("couldn't do something involving the checkpoint manager or Input Stream");
+			//log.error("couldn't do something involving the checkpoint manager or Input Stream");
 		}
 		catch (final BlockStoreException x)
 		{
@@ -757,7 +757,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public void onDestroy()
 	{
-		log.debug(".onDestroy()");
+		//log.debug(".onDestroy()");
 
 		WalletApplication.scheduleStartBlockchainService(this);
 
@@ -798,7 +798,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 
 		if (wakeLock.isHeld())
 		{
-			log.debug("wakelock still held, releasing");
+			//log.debug("wakelock still held, releasing");
 			wakeLock.release();
 		}
 
@@ -816,7 +816,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 	@Override
 	public void onLowMemory()
 	{
-		//log.warn("low memory detected, stopping service");
+		////log.warn("low memory detected, stopping service");
 		stopSelf();
 	}
 
@@ -908,7 +908,7 @@ public class BlockchainServiceImpl extends android.app.Service implements Blockc
 		}
 		catch (final RuntimeException x) // system server dead?
 		{
-			//log.warn("cannot update app widgets", x);
+			////log.warn("cannot update app widgets", x);
 		}
 	}
 

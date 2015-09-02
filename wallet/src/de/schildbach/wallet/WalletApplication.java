@@ -159,7 +159,7 @@ public class WalletApplication extends Application
 		//if (packageInfo.versionCode > lastVersionCode)
 			//log.info("detected app upgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
 		//else if (packageInfo.versionCode < lastVersionCode)
-			////log.warn("detected app downgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
+			//////log.warn("detected app downgrade: " + lastVersionCode + " -> " + packageInfo.versionCode);
 
 		if (lastVersionCode > 0 && lastVersionCode < KEY_ROTATION_VERSION_CODE && packageInfo.versionCode >= KEY_ROTATION_VERSION_CODE)
 		{
@@ -300,7 +300,7 @@ public class WalletApplication extends Application
 			}
 			catch (final FileNotFoundException x)
 			{
-				log.error("problem loading wallet", x);
+				//log.error("problem loading wallet", x);
 
 				Toast.makeText(WalletApplication.this, x.getClass().getName(), Toast.LENGTH_LONG).show();
 
@@ -308,7 +308,7 @@ public class WalletApplication extends Application
 			}
 			catch (final UnreadableWalletException x)
 			{
-				log.error("problem loading wallet", x);
+				//log.error("problem loading wallet", x);
 
 				Toast.makeText(WalletApplication.this, x.getClass().getName(), Toast.LENGTH_LONG).show();
 
@@ -426,7 +426,7 @@ public class WalletApplication extends Application
 		if (Constants.TEST)
 			Io.chmod(walletFile, 0777);
 
-		log.debug("wallet saved to: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
+		//log.debug("wallet saved to: '" + walletFile + "', took " + (System.currentTimeMillis() - start) + "ms");
 	}
 
     // Changed to append date/time stamp to prevent key overwriting
@@ -441,7 +441,7 @@ public class WalletApplication extends Application
 		}
 		catch (final IOException x)
 		{
-			log.error("problem writing key backup", x);
+			//log.error("problem writing key backup", x);
 		}
 	}
 

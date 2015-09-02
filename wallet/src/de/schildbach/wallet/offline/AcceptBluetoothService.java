@@ -76,7 +76,7 @@ public final class AcceptBluetoothService extends Service
 	public void onCreate()
 	{
 		serviceCreatedAt = System.currentTimeMillis();
-		log.debug(".onCreate()");
+		//log.debug(".onCreate()");
 
 		super.onCreate();
 

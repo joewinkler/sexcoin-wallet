@@ -316,11 +316,11 @@ public class ExchangeRatesProvider extends ContentProvider
 				reader = new InputStreamReader(new BufferedInputStream(connection.getInputStream(), 4096), Constants.UTF_8);
 				final StringBuilder content = new StringBuilder();
 				Io.copy(reader, content);
-				////log.info("RETURN FROM JSON: " + content.toString());
+				//log.info("RETURN FROM JSON: " + content.toString());
 				final Map<String, ExchangeRate> rates = new TreeMap<String, ExchangeRate>();
 
 				final JSONObject head = new JSONObject(content.toString());
-				////log.info("JSON 0: " + head.toString(4));
+				//log.info("JSON 0: " + head.toString(4));
 				
 				for (final Iterator<String> i = head.keys(); i.hasNext();)
 				{
@@ -346,7 +346,7 @@ public class ExchangeRatesProvider extends ContentProvider
 								}
 								catch (final ArithmeticException x)
 								{
-									//log.warn("problem fetching exchange rate: " + currencyCode, x);
+									////log.warn("problem fetching exchange rate: " + currencyCode, x);
 								}
 							}
 						}
@@ -359,12 +359,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				//log.warn("http status " + responseCode + " when fetching " + url);
+				////log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			//log.warn("problem fetching exchange rates", x);
+			////log.warn("problem fetching exchange rates", x);
 		}
 		finally
 		{
@@ -446,12 +446,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				//log.warn("http status " + responseCode + " when fetching " + url);
+				////log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			//log.warn("problem fetching exchange rates", x);
+			////log.warn("problem fetching exchange rates", x);
 		}
 		finally
 		{
@@ -507,12 +507,12 @@ public class ExchangeRatesProvider extends ContentProvider
 			}
 			else
 			{
-				//log.warn("http status " + responseCode + " when fetching " + url);
+				////log.warn("http status " + responseCode + " when fetching " + url);
 			}
 		}
 		catch (final Exception x)
 		{
-			//log.warn("problem fetching sxc exchange rates", x);
+			////log.warn("problem fetching sxc exchange rates", x);
 		}
 		finally
 		{

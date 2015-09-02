@@ -56,7 +56,7 @@ public abstract class HttpGetThread extends Thread
 	{
 		HttpURLConnection connection = null;
 
-		log.debug("querying \"" + url + "\"...");
+		//log.debug("querying \"" + url + "\"...");
 
 		try
 		{

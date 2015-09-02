@@ -283,7 +283,7 @@ public class CrashReporter
 			}
 			catch (final IOException x)
 			{
-				log.error("problem writing background trace", x);
+				//log.error("problem writing background trace", x);
 			}
 			finally
 			{
