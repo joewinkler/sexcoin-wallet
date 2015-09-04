@@ -17,40 +17,34 @@
 
 package de.schildbach.wallet.ui;
 
-import javax.annotation.Nonnull;
-
 import android.os.Handler;
 import android.os.Looper;
 
-import android.util.Log;
 import com.google.bitcoin.core.InsufficientMoneyException;
 import com.google.bitcoin.core.Transaction;
 import com.google.bitcoin.core.Wallet;
 import com.google.bitcoin.core.Wallet.SendRequest;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public abstract class SendCoinsOfflineTask
-{
-	private final Wallet wallet;
-	private final Handler backgroundHandler;
-	private final Handler callbackHandler;
+public abstract class SendCoinsOfflineTask {
+    private final Wallet wallet;
+    private final Handler backgroundHandler;
+    private final Handler callbackHandler;
 
-	public SendCoinsOfflineTask(@Nonnull final Wallet wallet, @Nonnull final Handler backgroundHandler)
-	{
-		this.wallet = wallet;
-		this.backgroundHandler = backgroundHandler;
-		this.callbackHandler = new Handler(Looper.myLooper());
-	}
+    public SendCoinsOfflineTask(@Nonnull final Wallet wallet, @Nonnull final Handler backgroundHandler) {
+        this.wallet = wallet;
+        this.backgroundHandler = backgroundHandler;
+        this.callbackHandler = new Handler(Looper.myLooper());
+    }
 
-	public final void sendCoinsOffline(@Nonnull final SendRequest sendRequest)
-	{
-		backgroundHandler.post(new Runnable()
-		{
-			@Override
-			public void run()
-			{
+    public final void sendCoinsOffline(@Nonnull final SendRequest sendRequest) {
+        backgroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
                 final Transaction transaction; // can take long
                 try {
                     transaction = wallet.sendCoinsOffline(sendRequest);
@@ -58,44 +52,37 @@ public abstract class SendCoinsOfflineTask
                     throw new RuntimeException(e);
                 }
 
-                callbackHandler.post(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						if (transaction != null)
-							onSuccess(transaction);
-						else
-							onFailure();
-					}
-				});
-			}
-		});
-	}
-
-    public final void commitRequest(@Nonnull final SendRequest sendRequest)
-    {
-        backgroundHandler.post(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                final Transaction transaction; // can take long
-                wallet.commitTx(sendRequest.tx);
-
-                callbackHandler.post(new Runnable()
-                {
+                callbackHandler.post(new Runnable() {
                     @Override
-                    public void run()
-                    {
-                            onSuccess(sendRequest.tx);
+                    public void run() {
+                        if (transaction != null)
+                            onSuccess(transaction);
+                        else
+                            onFailure();
                     }
                 });
             }
         });
     }
 
-	protected abstract void onSuccess(@Nonnull Transaction transaction);
+    public final void commitRequest(@Nonnull final SendRequest sendRequest) {
+        backgroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                final Transaction transaction; // can take long
+                wallet.commitTx(sendRequest.tx);
 
-	protected abstract void onFailure();
+                callbackHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        onSuccess(sendRequest.tx);
+                    }
+                });
+            }
+        });
+    }
+
+    protected abstract void onSuccess(@Nonnull Transaction transaction);
+
+    protected abstract void onFailure();
 }

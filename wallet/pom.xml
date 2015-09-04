@@ -1,111 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<packaging>apk</packaging>
-	<name>SexCoin Wallet</name>
-	
-	
+    <packaging>apk</packaging>
+    <name>SexCoin Wallet</name>
 
-	<parent>
-		<groupId>de.schildbach.wallet</groupId>
-		<artifactId>base</artifactId>
-		<version>1</version>
-	</parent>
 
-	<dependencies>
+    <parent>
+        <groupId>de.schildbach.wallet</groupId>
+        <artifactId>base</artifactId>
+        <version>1</version>
+    </parent>
 
-		<!-- android.*, java.*, javax.* -->
-		<dependency>
-			<groupId>com.google.android</groupId>
-			<artifactId>android</artifactId>
-			<version>4.0.1.2</version>
-			<scope>provided</scope>
-		</dependency>
+    <dependencies>
 
-		<!-- android.annotation.* -->
-		<dependency>
-			<groupId>com.google.android</groupId>
-			<artifactId>annotations</artifactId>
-			<version>4.1.1.4</version>
-			<scope>provided</scope>
-		</dependency>
+        <!-- android.*, java.*, javax.* -->
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>4.0.1.2</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- android.annotation.* -->
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>annotations</artifactId>
+            <version>4.1.1.4</version>
+            <scope>provided</scope>
+        </dependency>
 
 
         <!-- android.support.v4.* -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.google.android</groupId> -->
-<!-- 			<artifactId>support-v4</artifactId> -->
-<!-- 			<version>r7</version> -->
-<!--         </dependency> -->
+        <!-- 		<dependency> -->
+        <!-- 			<groupId>com.google.android</groupId> -->
+        <!-- 			<artifactId>support-v4</artifactId> -->
+        <!-- 			<version>r7</version> -->
+        <!--         </dependency> -->
 
-		<!-- com.actionbarsherlock.* -->
-		<dependency>
-			<groupId>com.actionbarsherlock</groupId>
-			<artifactId>actionbarsherlock</artifactId>
-			<version>4.4.0</version>
-			<type>apklib</type>
-		</dependency>
+        <!-- com.actionbarsherlock.* -->
+        <dependency>
+            <groupId>com.actionbarsherlock</groupId>
+            <artifactId>actionbarsherlock</artifactId>
+            <version>4.4.0</version>
+            <type>apklib</type>
+        </dependency>
 
-		<!-- com.google.bitcoin.* -->
-		<dependency>
-			<groupId>com.google</groupId>
-			<artifactId>bitcoinj</artifactId>
-			<version>0.11-SNAPSHOT</version>
-		</dependency>
+        <!-- com.google.bitcoin.* -->
+        <dependency>
+            <groupId>com.google</groupId>
+            <artifactId>bitcoinj</artifactId>
+            <version>0.11-SNAPSHOT</version>
+        </dependency>
 
-		<!-- de.schildbach.wallet.integration.android.* -->
-		<dependency>
-			<groupId>de.schildbach.wallet</groupId>
-			<artifactId>integration-android</artifactId>
-			<version>1.0</version>
-			<type>apklib</type>
-		</dependency>
+        <!-- de.schildbach.wallet.integration.android.* -->
+        <dependency>
+            <groupId>de.schildbach.wallet</groupId>
+            <artifactId>integration-android</artifactId>
+            <version>1.0</version>
+            <type>apklib</type>
+        </dependency>
 
-		<!-- com.google.zxing.* -->
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>2.2</version>
-		</dependency>
+        <!-- com.google.zxing.* -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>2.2</version>
+        </dependency>
 
-		<!-- org.slf4j.* -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.7</version>
-		</dependency>
+        <!-- org.slf4j.* -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.7</version>
+        </dependency>
 
-		<!-- ch.qos.logback.classic.* -->
-		<dependency>
-			<groupId>com.github.tony19</groupId>
-			<artifactId>logback-android-classic</artifactId>
-			<version>1.0.10-2</version>
-		</dependency>
+        <!-- ch.qos.logback.classic.* -->
+        <dependency>
+            <groupId>com.github.tony19</groupId>
+            <artifactId>logback-android-classic</artifactId>
+            <version>1.0.10-2</version>
+        </dependency>
 
-		<!-- ch.qos.logback.core.* -->
-		<dependency>
-			<groupId>com.github.tony19</groupId>
-			<artifactId>logback-android-core</artifactId>
-			<version>1.0.10-2</version>
-		</dependency>
+        <!-- ch.qos.logback.core.* -->
+        <dependency>
+            <groupId>com.github.tony19</groupId>
+            <artifactId>logback-android-core</artifactId>
+            <version>1.0.10-2</version>
+        </dependency>
 
-		<!-- javax.annotation.* -->
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<version>1.3.9</version>
-		</dependency>
+        <!-- javax.annotation.* -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>1.3.9</version>
+        </dependency>
 
-		<!-- org.junit.* -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
+        <!-- org.junit.* -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
@@ -117,78 +117,81 @@
             <artifactId>guava</artifactId>
             <version>13.0.1</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.madgag</groupId>
             <artifactId>sc-light-jdk15on</artifactId>
             <version>1.47.0.2</version>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>com.lambdaworks</groupId> -->
-<!--             <artifactId>scrypt</artifactId> -->
-<!--             <version>1.4.0</version> -->
-<!--         </dependency> -->
-	</dependencies>
+        <!--         <dependency> -->
+        <!--             <groupId>com.lambdaworks</groupId> -->
+        <!--             <artifactId>scrypt</artifactId> -->
+        <!--             <version>1.4.0</version> -->
+        <!--         </dependency> -->
+    </dependencies>
 
-	<profiles>
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>com.jayway.maven.plugins.android.generation2</groupId>
-						<artifactId>android-maven-plugin</artifactId>
-						<configuration>
-						    <release>true</release>
-							<proguard>
-								<skip>true</skip>
-							</proguard>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                        <artifactId>android-maven-plugin</artifactId>
+                        <configuration>
+                            <release>true</release>
+                            <proguard>
+                                <skip>true</skip>
+                            </proguard>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
-	<!-- to build, run: mvn clean install -->
-	<!-- then to install on an android device, run: mvn android:deploy -->
-	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>false</downloadJavadocs>
-					<additionalProjectnatures>
-						<projectnature>com.android.ide.eclipse.adt.AndroidNature</projectnature>
-					</additionalProjectnatures>
-					<additionalBuildcommands>
-						<buildcommand>com.android.ide.eclipse.adt.ResourceManagerBuilder</buildcommand>
-						<buildcommand>com.android.ide.eclipse.adt.PreCompilerBuilder</buildcommand>
-						<buildcommand>com.android.ide.eclipse.adt.ApkBuilder</buildcommand>
-					</additionalBuildcommands>
-					<classpathContainers>
-						<classpathContainer>com.android.ide.eclipse.adt.ANDROID_FRAMEWORK</classpathContainer>
-						<!-- This is a workaround: we do not want JRE_CONTAINER, however if we remove it, it will be automatically added, and 
-							placed first. So we add it in the second position, so that the project is recognized as an Android project. -->
-						<classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
-					</classpathContainers>
-					<excludes>
-						<exclude>android:android</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+    <!-- to build, run: mvn clean install -->
+    <!-- then to install on an android device, run: mvn android:deploy -->
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>false</downloadJavadocs>
+                    <additionalProjectnatures>
+                        <projectnature>com.android.ide.eclipse.adt.AndroidNature</projectnature>
+                    </additionalProjectnatures>
+                    <additionalBuildcommands>
+                        <buildcommand>com.android.ide.eclipse.adt.ResourceManagerBuilder
+                        </buildcommand>
+                        <buildcommand>com.android.ide.eclipse.adt.PreCompilerBuilder</buildcommand>
+                        <buildcommand>com.android.ide.eclipse.adt.ApkBuilder</buildcommand>
+                    </additionalBuildcommands>
+                    <classpathContainers>
+                        <classpathContainer>com.android.ide.eclipse.adt.ANDROID_FRAMEWORK
+                        </classpathContainer>
+                        <!-- This is a workaround: we do not want JRE_CONTAINER, however if we remove it, it will be automatically added, and
+                            placed first. So we add it in the second position, so that the project is recognized as an Android project. -->
+                        <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER
+                        </classpathContainer>
+                    </classpathContainers>
+                    <excludes>
+                        <exclude>android:android</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
@@ -211,8 +214,10 @@
                             <keypass>${sign.keypass}</keypass>
                             <verbose>true</verbose>
                             <arguments>
-                                <argument>-sigalg</argument><argument>MD5withRSA</argument>
-                                <argument>-digestalg</argument><argument>SHA1</argument>
+                                <argument>-sigalg</argument>
+                                <argument>MD5withRSA</argument>
+                                <argument>-digestalg</argument>
+                                <argument>SHA1</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -239,8 +244,12 @@
                     <zipalign>
                         <skip>false</skip>
                         <verbose>true</verbose>
-                        <inputApk>${project.build.directory}/${project.artifactId}-${project.version}.apk</inputApk>
-                        <outputApk>${project.build.directory}/${project.artifactId}-${project.version}-signed-aligned.apk</outputApk>
+                        <inputApk>
+                            ${project.build.directory}/${project.artifactId}-${project.version}.apk
+                        </inputApk>
+                        <outputApk>
+                            ${project.build.directory}/${project.artifactId}-${project.version}-signed-aligned.apk
+                        </outputApk>
                     </zipalign>
                 </configuration>
                 <executions>
@@ -254,54 +263,60 @@
                 </executions>
             </plugin>
         </plugins>
-	</build>
+    </build>
 
-	<!-- to generate reports, run: mvn clean install site -->
-	<!-- then browse to: target/site/index.html -->
-	<reporting>
-		<plugins>
-			<plugin>
+    <!-- to generate reports, run: mvn clean install site -->
+    <!-- then browse to: target/site/index.html -->
+    <reporting>
+        <plugins>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
                 <version>2.5.4-SNAPSHOT</version>
-				<configuration>
-					<onlyAnalyze>de.schildbach.wallet.-</onlyAnalyze>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
+                <configuration>
+                    <onlyAnalyze>de.schildbach.wallet.-</onlyAnalyze>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 
-	<url>sexcoin.co.in</url>
-	<organization>
-		<name>SexCoin Developer</name>
-		<url>sexcoin.co.in</url>
-	</organization>
-	<groupId>de.schildbach.wallet_sxc</groupId>
-	<artifactId>wallet</artifactId>
-	<version>0.10.7.2</version>
-	<description>Welcome to Sexcoin Wallet, a standalone Sexcoin payment app for your Android device!
+    <url>sexcoin.co.in</url>
+    <organization>
+        <name>SexCoin Developer</name>
+        <url>sexcoin.co.in</url>
+    </organization>
+    <groupId>de.schildbach.wallet_sxc</groupId>
+    <artifactId>sex.coin.wallet</artifactId>
+    <version>0.10.7.3</version>
+    <description>Welcome to Sexcoin Wallet, a standalone Sexcoin payment app for your Android
+        device!
 
-This is a pre-ALPHA release
+        This is a pre-ALPHA release
 
-!!DO NOT RISK LARGE AMOUNTS OF COIN!!
+        !!DO NOT RISK LARGE AMOUNTS OF COIN!!
 
-This project contains several sub-projects:
+        This project contains several sub-projects:
 
-    wallet: The Android app itself. This is probably what you're searching for.
-    market: App description and promo material for the Google Play app store.
-    integration-android: A tiny library for integrating Sexcoin payments into your own Android app (e.g. donations, in-app purchases).
-    sample-integration-android: A minimal example app to demonstrate integration of Sexcoin payments into your Android app.
+        wallet: The Android app itself. This is probably what you're searching for.
+        market: App description and promo material for the Google Play app store.
+        integration-android: A tiny library for integrating Sexcoin payments into your own Android
+        app (e.g. donations, in-app purchases).
+        sample-integration-android: A minimal example app to demonstrate integration of Sexcoin
+        payments into your Android app.
 
-This project also depends on the joewinkler/bitcoinj-scrypt library. You must pull this library first and do a maven build before building 'bitcoin-wallet' This project will be refactored sometime in the future.
+        This project also depends on the joewinkler/bitcoinj-scrypt library. You must pull this
+        library first and do a maven build before building 'bitcoin-wallet' This project will be
+        refactored sometime in the future.
 
-Once bitcoinj-scrypt is built, you can build this with Maven:
+        Once bitcoinj-scrypt is built, you can build this with Maven:
 
-mvn clean install</description>
-	<inceptionYear>2015</inceptionYear>
-	<scm>
-		<url>https://github.com/joewinkler/sexcoin-wallet</url>
-		<connection>joewinkler</connection>
-		<tag>joewinkler</tag>
-		<developerConnection>forked from lavajumper/sexcoin-wallet</developerConnection>
-	</scm>
+        mvn clean install
+    </description>
+    <inceptionYear>2015</inceptionYear>
+    <scm>
+        <url>https://github.com/joewinkler/sexcoin-wallet</url>
+        <connection>joewinkler</connection>
+        <tag>joewinkler</tag>
+        <developerConnection>forked from lavajumper/sexcoin-wallet</developerConnection>
+    </scm>
 </project>

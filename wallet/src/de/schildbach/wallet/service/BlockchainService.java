@@ -17,40 +17,39 @@
 
 package de.schildbach.wallet.service;
 
+import com.google.bitcoin.core.Peer;
+import com.google.bitcoin.core.StoredBlock;
+
 import java.util.List;
 
 import javax.annotation.CheckForNull;
-
-import com.google.bitcoin.core.Peer;
-import com.google.bitcoin.core.StoredBlock;
 
 import de.schildbach.wallet_sxc.R;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public interface BlockchainService
-{
-	public static final String ACTION_PEER_STATE = R.class.getPackage().getName() + ".peer_state";
-	public static final String ACTION_PEER_STATE_NUM_PEERS = "num_peers";
+public interface BlockchainService {
+    String ACTION_PEER_STATE = R.class.getPackage().getName() + ".peer_state";
+    String ACTION_PEER_STATE_NUM_PEERS = "num_peers";
 
-	public static final String ACTION_BLOCKCHAIN_STATE = R.class.getPackage().getName() + ".blockchain_state";
-	public static final String ACTION_BLOCKCHAIN_STATE_BEST_CHAIN_DATE = "best_chain_date";
-	public static final String ACTION_BLOCKCHAIN_STATE_BEST_CHAIN_HEIGHT = "best_chain_height";
-	public static final String ACTION_BLOCKCHAIN_STATE_REPLAYING = "replaying";
-	public static final String ACTION_BLOCKCHAIN_STATE_DOWNLOAD = "download";
-	public static final int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK = 0;
-	public static final int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_STORAGE_PROBLEM = 1;
-	public static final int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_NETWORK_PROBLEM = 2;
+    String ACTION_BLOCKCHAIN_STATE = R.class.getPackage().getName() + ".blockchain_state";
+    String ACTION_BLOCKCHAIN_STATE_BEST_CHAIN_DATE = "best_chain_date";
+    String ACTION_BLOCKCHAIN_STATE_BEST_CHAIN_HEIGHT = "best_chain_height";
+    String ACTION_BLOCKCHAIN_STATE_REPLAYING = "replaying";
+    String ACTION_BLOCKCHAIN_STATE_DOWNLOAD = "download";
+    int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK = 0;
+    int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_STORAGE_PROBLEM = 1;
+    int ACTION_BLOCKCHAIN_STATE_DOWNLOAD_NETWORK_PROBLEM = 2;
 
-	public static final String ACTION_CANCEL_COINS_RECEIVED = R.class.getPackage().getName() + ".cancel_coins_received";
-	public static final String ACTION_RESET_BLOCKCHAIN = R.class.getPackage().getName() + ".reset_blockchain";
-	public static final String ACTION_BROADCAST_TRANSACTION = R.class.getPackage().getName() + ".broadcast_transaction";
-	public static final String ACTION_BROADCAST_TRANSACTION_HASH = "hash";
-    public static final String ACTION_STOP_SERVICE = "stop_service";
+    String ACTION_CANCEL_COINS_RECEIVED = R.class.getPackage().getName() + ".cancel_coins_received";
+    String ACTION_RESET_BLOCKCHAIN = R.class.getPackage().getName() + ".reset_blockchain";
+    String ACTION_BROADCAST_TRANSACTION = R.class.getPackage().getName() + ".broadcast_transaction";
+    String ACTION_BROADCAST_TRANSACTION_HASH = "hash";
+    String ACTION_STOP_SERVICE = "stop_service";
 
-	@CheckForNull
-	List<Peer> getConnectedPeers();
+    @CheckForNull
+    List<Peer> getConnectedPeers();
 
-	List<StoredBlock> getRecentBlocks(int maxBlocks);
+    List<StoredBlock> getRecentBlocks(int maxBlocks);
 }

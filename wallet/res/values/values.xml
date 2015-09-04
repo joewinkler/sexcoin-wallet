@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string name="symbol_to">→</string>
-	<string name="symbol_from">←</string>
-	<string name="symbol_internal">⇄</string>
-	<string name="app_name">Sexcoin</string>
+    <string name="symbol_to">→</string>
+    <string name="symbol_from">←</string>
+    <string name="symbol_internal">⇄</string>
+    <string name="app_name">Sexcoin</string>
 
-	<string-array name="preferences_precision_values">
-		<item>8</item>
-		<item>6</item>
-		<item>4</item>
-		<item>2/3</item>
-	</string-array>
-	<string-array name="preferences_precision_labels">
-		<item>SXC, 8 digits</item>
-		<item>SXC, 6 digits</item>
-		<item>SXC, 4 digits</item>
-		<item>mSXC, 2 digits</item>
-	</string-array>
+    <string-array name="preferences_precision_values">
+        <item>8</item>
+        <item>6</item>
+        <item>4</item>
+        <item>2/3</item>
+    </string-array>
+    <string-array name="preferences_precision_labels">
+        <item>SXC, 8 digits</item>
+        <item>SXC, 6 digits</item>
+        <item>SXC, 4 digits</item>
+        <item>mSXC, 2 digits</item>
+    </string-array>
 
 
     <string-array name="preferences_qr_values">

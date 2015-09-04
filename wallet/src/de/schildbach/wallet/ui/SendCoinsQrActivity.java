@@ -17,8 +17,6 @@
 
 package de.schildbach.wallet.ui;
 
-import java.math.BigInteger;
-
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -29,77 +27,67 @@ import com.google.bitcoin.core.Address;
 import com.google.bitcoin.core.ECKey;
 import com.google.bitcoin.core.Transaction;
 
-import de.schildbach.wallet.Constants;
-import de.schildbach.wallet.ui.InputParser.StringInputParser;
+import java.math.BigInteger;
 
 import javax.annotation.Nonnull;
+
+import de.schildbach.wallet.Constants;
+import de.schildbach.wallet.ui.InputParser.StringInputParser;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class SendCoinsQrActivity extends AbstractOnDemandServiceActivity
-{
-	private static final int REQUEST_CODE_SCAN = 0;
+public final class SendCoinsQrActivity extends AbstractOnDemandServiceActivity {
+    private static final int REQUEST_CODE_SCAN = 0;
 
-	@Override
-	protected void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		startActivityForResult(new Intent(this, ScanActivity.class), REQUEST_CODE_SCAN);
-	}
+        startActivityForResult(new Intent(this, ScanActivity.class), REQUEST_CODE_SCAN);
+    }
 
-	@Override
-	public void onActivityResult(final int requestCode, final int resultCode, final Intent intent)
-	{
-		if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK)
-		{
-			final String input = intent.getStringExtra(ScanActivity.INTENT_EXTRA_RESULT);
+    @Override
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+        if (requestCode == REQUEST_CODE_SCAN && resultCode == Activity.RESULT_OK) {
+            final String input = intent.getStringExtra(ScanActivity.INTENT_EXTRA_RESULT);
 
-			new StringInputParser(input)
-			{
-				@Override
-				protected void bitcoinRequest(@Nonnull final Address address, final String addressLabel, final BigInteger amount, final String bluetoothMac)
-				{
-					SendCoinsActivity
-							.start(SendCoinsQrActivity.this, address.toString(), addressLabel, amount, bluetoothMac);
+            new StringInputParser(input) {
+                private final OnClickListener dismissListener = new OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, final int which) {
+                        SendCoinsQrActivity.this.finish();
+                    }
+                };
 
-					SendCoinsQrActivity.this.finish();
-				}
+                @Override
+                protected void bitcoinRequest(@Nonnull final Address address, final String addressLabel, final BigInteger amount, final String bluetoothMac) {
+                    SendCoinsActivity
+                            .start(SendCoinsQrActivity.this, address.toString(), addressLabel, amount, bluetoothMac);
 
-				@Override
-				protected void directTransaction(@Nonnull final Transaction transaction)
-				{
-					processDirectTransaction(transaction);
+                    SendCoinsQrActivity.this.finish();
+                }
 
-					SendCoinsQrActivity.this.finish();
-				}
+                @Override
+                protected void directTransaction(@Nonnull final Transaction transaction) {
+                    processDirectTransaction(transaction);
 
-				@Override
-				protected void error(final int messageResId, final Object... messageArgs)
-				{
-					dialog(SendCoinsQrActivity.this, dismissListener, 0, messageResId, messageArgs);
-				}
+                    SendCoinsQrActivity.this.finish();
+                }
+
+                @Override
+                protected void error(final int messageResId, final Object... messageArgs) {
+                    dialog(SendCoinsQrActivity.this, dismissListener, 0, messageResId, messageArgs);
+                }
 
                 @Override
                 protected void handlePrivateKey(@Nonnull ECKey key) {
                     final Address address = new Address(Constants.NETWORK_PARAMETERS, key.getPubKeyHash());
                     bitcoinRequest(address, null, null, null);
                 }
-
-                private final OnClickListener dismissListener = new OnClickListener()
-				{
-					@Override
-					public void onClick(final DialogInterface dialog, final int which)
-					{
-						SendCoinsQrActivity.this.finish();
-					}
-				};
-			}.parse();
-		}
-		else
-		{
-			finish();
-		}
-	}
+            }.parse();
+        } else {
+            finish();
+        }
+    }
 }

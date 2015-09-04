@@ -17,13 +17,6 @@
 
 package de.schildbach.wallet.ui;
 
-import java.io.IOException;
-import java.util.EnumMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -58,335 +51,281 @@ import com.google.zxing.ResultPointCallback;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.EnumMap;
+import java.util.Map;
+
 import de.schildbach.wallet.camera.CameraManager;
 import de.schildbach.wallet_sxc.R;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class ScanActivity extends Activity implements SurfaceHolder.Callback
-{
-	public static final String INTENT_EXTRA_RESULT = "result";
+public final class ScanActivity extends Activity implements SurfaceHolder.Callback {
+    public static final String INTENT_EXTRA_RESULT = "result";
 
-	private static final long VIBRATE_DURATION = 50L;
-	private static final long AUTO_FOCUS_INTERVAL_MS = 2500L;
+    private static final long VIBRATE_DURATION = 50L;
+    private static final long AUTO_FOCUS_INTERVAL_MS = 2500L;
+    private static final int DIALOG_CAMERA_PROBLEM = 0;
+    private static final Logger log = LoggerFactory.getLogger(ScanActivity.class);
+    private static boolean DISABLE_CONTINUOUS_AUTOFOCUS = Build.MODEL.equals("GT-I9100") // Galaxy S2
+            || Build.MODEL.equals("SGH-T989") // Galaxy S2
+            || Build.MODEL.equals("SGH-T989D") // Galaxy S2 X
+            || Build.MODEL.equals("SAMSUNG-SGH-I727") // Galaxy S2 Skyrocket
+            || Build.MODEL.equals("GT-I9300") // Galaxy S3
+            || Build.MODEL.equals("GT-N7000"); // Galaxy Note
+    private final CameraManager cameraManager = new CameraManager();
+    private ScannerView scannerView;
+    private SurfaceHolder surfaceHolder;
+    private Vibrator vibrator;
+    private HandlerThread cameraThread;
+    private Handler cameraHandler;
+    private final Runnable closeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            cameraManager.close();
 
-	private final CameraManager cameraManager = new CameraManager();
-	private ScannerView scannerView;
-	private SurfaceHolder surfaceHolder;
-	private Vibrator vibrator;
-	private HandlerThread cameraThread;
-	private Handler cameraHandler;
+            // cancel background thread
+            cameraHandler.removeCallbacksAndMessages(null);
+            cameraThread.quit();
+        }
+    };
+    private final Runnable fetchAndDecodeRunnable = new Runnable() {
+        private final QRCodeReader reader = new QRCodeReader();
+        private final Map<DecodeHintType, Object> hints = new EnumMap<DecodeHintType, Object>(DecodeHintType.class);
 
-	private static final int DIALOG_CAMERA_PROBLEM = 0;
+        @Override
+        public void run() {
+            cameraManager.requestPreviewFrame(new PreviewCallback() {
+                @Override
+                public void onPreviewFrame(final byte[] data, final Camera camera) {
+                    decode(data);
+                }
+            });
+        }
 
-	private static boolean DISABLE_CONTINUOUS_AUTOFOCUS = Build.MODEL.equals("GT-I9100") // Galaxy S2
-			|| Build.MODEL.equals("SGH-T989") // Galaxy S2
-			|| Build.MODEL.equals("SGH-T989D") // Galaxy S2 X
-			|| Build.MODEL.equals("SAMSUNG-SGH-I727") // Galaxy S2 Skyrocket
-			|| Build.MODEL.equals("GT-I9300") // Galaxy S3
-			|| Build.MODEL.equals("GT-N7000"); // Galaxy Note
+        private void decode(final byte[] data) {
+            final PlanarYUVLuminanceSource source = cameraManager.buildLuminanceSource(data);
+            final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
-	private static final Logger log = LoggerFactory.getLogger(ScanActivity.class);
+            try {
+                hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, new ResultPointCallback() {
+                    @Override
+                    public void foundPossibleResultPoint(final ResultPoint dot) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                scannerView.addDot(dot);
+                            }
+                        });
+                    }
+                });
+                final Result scanResult = reader.decode(bitmap, hints);
 
-	@Override
-	public void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+                final int thumbnailWidth = source.getThumbnailWidth();
+                final int thumbnailHeight = source.getThumbnailHeight();
+                final float thumbnailScaleFactor = (float) thumbnailWidth / source.getWidth();
 
-		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                final Bitmap thumbnailImage = Bitmap.createBitmap(thumbnailWidth, thumbnailHeight, Bitmap.Config.ARGB_8888);
+                thumbnailImage.setPixels(source.renderThumbnail(), 0, thumbnailWidth, 0, 0, thumbnailWidth, thumbnailHeight);
 
-		setContentView(R.layout.scan_activity);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleResult(scanResult, thumbnailImage, thumbnailScaleFactor);
+                    }
+                });
+            } catch (final ReaderException x) {
+                // retry
+                cameraHandler.post(fetchAndDecodeRunnable);
+            } finally {
+                reader.reset();
+            }
+        }
+    };
+    private final Runnable openRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                final Camera camera = cameraManager.open(surfaceHolder, !DISABLE_CONTINUOUS_AUTOFOCUS);
 
-		scannerView = (ScannerView) findViewById(R.id.scan_activity_mask);
-	}
+                final Rect framingRect = cameraManager.getFrame();
+                final Rect framingRectInPreview = cameraManager.getFramePreview();
 
-	@Override
-	protected void onResume()
-	{
-		super.onResume();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        scannerView.setFraming(framingRect, framingRectInPreview);
+                    }
+                });
 
-		cameraThread = new HandlerThread("cameraThread", Process.THREAD_PRIORITY_BACKGROUND);
-		cameraThread.start();
-		cameraHandler = new Handler(cameraThread.getLooper());
+                final String focusMode = camera.getParameters().getFocusMode();
+                final boolean nonContinuousAutoFocus = Camera.Parameters.FOCUS_MODE_AUTO.equals(focusMode)
+                        || Camera.Parameters.FOCUS_MODE_MACRO.equals(focusMode);
 
-		final SurfaceView surfaceView = (SurfaceView) findViewById(R.id.scan_activity_preview);
-		surfaceHolder = surfaceView.getHolder();
-		surfaceHolder.addCallback(this);
-		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-	}
+                if (nonContinuousAutoFocus)
+                    cameraHandler.post(new AutoFocusRunnable(camera));
 
-	@Override
-	public void surfaceCreated(final SurfaceHolder holder)
-	{
-		cameraHandler.post(openRunnable);
-	}
+                cameraHandler.post(fetchAndDecodeRunnable);
+            } catch (final IOException x) {
+                //log.info("problem opening camera", x);
+                showDialog(DIALOG_CAMERA_PROBLEM);
+            } catch (final RuntimeException x) {
+                //log.info("problem opening camera", x);
+                showDialog(DIALOG_CAMERA_PROBLEM);
+            }
+        }
+    };
 
-	@Override
-	public void surfaceDestroyed(final SurfaceHolder holder)
-	{
-	}
+    @Override
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-	@Override
-	public void surfaceChanged(final SurfaceHolder holder, final int format, final int width, final int height)
-	{
-	}
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-	@Override
-	protected void onPause()
-	{
-		cameraHandler.post(closeRunnable);
+        setContentView(R.layout.scan_activity);
 
-		surfaceHolder.removeCallback(this);
+        scannerView = (ScannerView) findViewById(R.id.scan_activity_mask);
+    }
 
-		super.onPause();
-	}
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-	@Override
-	public void onBackPressed()
-	{
-		setResult(RESULT_CANCELED);
-		finish();
-	}
+        cameraThread = new HandlerThread("cameraThread", Process.THREAD_PRIORITY_BACKGROUND);
+        cameraThread.start();
+        cameraHandler = new Handler(cameraThread.getLooper());
 
-	@Override
-	public boolean onKeyDown(final int keyCode, final KeyEvent event)
-	{
-		switch (keyCode)
-		{
-			case KeyEvent.KEYCODE_FOCUS:
-			case KeyEvent.KEYCODE_CAMERA:
-				// don't launch camera app
-				return true;
-			case KeyEvent.KEYCODE_VOLUME_DOWN:
-			case KeyEvent.KEYCODE_VOLUME_UP:
-				cameraHandler.post(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						cameraManager.setTorch(keyCode == KeyEvent.KEYCODE_VOLUME_UP);
-					}
-				});
-				return true;
-		}
+        final SurfaceView surfaceView = (SurfaceView) findViewById(R.id.scan_activity_preview);
+        surfaceHolder = surfaceView.getHolder();
+        surfaceHolder.addCallback(this);
+        surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    }
 
-		return super.onKeyDown(keyCode, event);
-	}
+    @Override
+    public void surfaceCreated(final SurfaceHolder holder) {
+        cameraHandler.post(openRunnable);
+    }
 
-	public void handleResult(final Result scanResult, final Bitmap thumbnailImage, final float thumbnailScaleFactor)
-	{
-		vibrator.vibrate(VIBRATE_DURATION);
+    @Override
+    public void surfaceDestroyed(final SurfaceHolder holder) {
+    }
 
-		// superimpose dots to highlight the key features of the qr code
-		final ResultPoint[] points = scanResult.getResultPoints();
-		if (points != null && points.length > 0)
-		{
-			final Paint paint = new Paint();
-			paint.setColor(getResources().getColor(R.color.scan_result_dots));
-			paint.setStrokeWidth(10.0f);
+    @Override
+    public void surfaceChanged(final SurfaceHolder holder, final int format, final int width, final int height) {
+    }
 
-			final Canvas canvas = new Canvas(thumbnailImage);
-			canvas.scale(thumbnailScaleFactor, thumbnailScaleFactor);
-			for (final ResultPoint point : points)
-				canvas.drawPoint(point.getX(), point.getY(), paint);
-		}
+    @Override
+    protected void onPause() {
+        cameraHandler.post(closeRunnable);
 
-		scannerView.drawResultBitmap(thumbnailImage);
+        surfaceHolder.removeCallback(this);
 
-		final Intent result = new Intent();
-		result.putExtra(INTENT_EXTRA_RESULT, scanResult.getText());
-		setResult(RESULT_OK, result);
+        super.onPause();
+    }
 
-		// delayed finish
-		new Handler().post(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				finish();
-			}
-		});
-	}
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        finish();
+    }
 
-	private final Runnable openRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			try
-			{
-				final Camera camera = cameraManager.open(surfaceHolder, !DISABLE_CONTINUOUS_AUTOFOCUS);
+    @Override
+    public boolean onKeyDown(final int keyCode, final KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_FOCUS:
+            case KeyEvent.KEYCODE_CAMERA:
+                // don't launch camera app
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                cameraHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        cameraManager.setTorch(keyCode == KeyEvent.KEYCODE_VOLUME_UP);
+                    }
+                });
+                return true;
+        }
 
-				final Rect framingRect = cameraManager.getFrame();
-				final Rect framingRectInPreview = cameraManager.getFramePreview();
+        return super.onKeyDown(keyCode, event);
+    }
 
-				runOnUiThread(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						scannerView.setFraming(framingRect, framingRectInPreview);
-					}
-				});
+    public void handleResult(final Result scanResult, final Bitmap thumbnailImage, final float thumbnailScaleFactor) {
+        vibrator.vibrate(VIBRATE_DURATION);
 
-				final String focusMode = camera.getParameters().getFocusMode();
-				final boolean nonContinuousAutoFocus = Camera.Parameters.FOCUS_MODE_AUTO.equals(focusMode)
-						|| Camera.Parameters.FOCUS_MODE_MACRO.equals(focusMode);
+        // superimpose dots to highlight the key features of the qr code
+        final ResultPoint[] points = scanResult.getResultPoints();
+        if (points != null && points.length > 0) {
+            final Paint paint = new Paint();
+            paint.setColor(getResources().getColor(R.color.scan_result_dots));
+            paint.setStrokeWidth(10.0f);
 
-				if (nonContinuousAutoFocus)
-					cameraHandler.post(new AutoFocusRunnable(camera));
+            final Canvas canvas = new Canvas(thumbnailImage);
+            canvas.scale(thumbnailScaleFactor, thumbnailScaleFactor);
+            for (final ResultPoint point : points)
+                canvas.drawPoint(point.getX(), point.getY(), paint);
+        }
 
-				cameraHandler.post(fetchAndDecodeRunnable);
-			}
-			catch (final IOException x)
-			{
-				//log.info("problem opening camera", x);
-				showDialog(DIALOG_CAMERA_PROBLEM);
-			}
-			catch (final RuntimeException x)
-			{
-				//log.info("problem opening camera", x);
-				showDialog(DIALOG_CAMERA_PROBLEM);
-			}
-		}
-	};
+        scannerView.drawResultBitmap(thumbnailImage);
 
-	private final Runnable closeRunnable = new Runnable()
-	{
-		@Override
-		public void run()
-		{
-			cameraManager.close();
+        final Intent result = new Intent();
+        result.putExtra(INTENT_EXTRA_RESULT, scanResult.getText());
+        setResult(RESULT_OK, result);
 
-			// cancel background thread
-			cameraHandler.removeCallbacksAndMessages(null);
-			cameraThread.quit();
-		}
-	};
+        // delayed finish
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        });
+    }
 
-	private final class AutoFocusRunnable implements Runnable
-	{
-		private final Camera camera;
+    @Override
+    protected Dialog onCreateDialog(final int id) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-		public AutoFocusRunnable(final Camera camera)
-		{
-			this.camera = camera;
-		}
+        if (id == DIALOG_CAMERA_PROBLEM) {
+            builder.setIcon(android.R.drawable.ic_dialog_alert);
+            builder.setTitle(R.string.scan_camera_problem_dialog_title);
+            builder.setMessage(R.string.scan_camera_problem_dialog_message);
+            builder.setNeutralButton(R.string.button_dismiss, new OnClickListener() {
+                @Override
+                public void onClick(final DialogInterface dialog, final int which) {
+                    finish();
+                }
+            });
+            builder.setOnCancelListener(new OnCancelListener() {
+                @Override
+                public void onCancel(final DialogInterface dialog) {
+                    finish();
+                }
+            });
+        }
 
-		@Override
-		public void run()
-		{
-			camera.autoFocus(new Camera.AutoFocusCallback()
-			{
-				@Override
-				public void onAutoFocus(final boolean success, final Camera camera)
-				{
-					// schedule again
-					cameraHandler.postDelayed(AutoFocusRunnable.this, AUTO_FOCUS_INTERVAL_MS);
-				}
-			});
-		}
-	}
+        return builder.create();
+    }
 
-	private final Runnable fetchAndDecodeRunnable = new Runnable()
-	{
-		private final QRCodeReader reader = new QRCodeReader();
-		private final Map<DecodeHintType, Object> hints = new EnumMap<DecodeHintType, Object>(DecodeHintType.class);
+    private final class AutoFocusRunnable implements Runnable {
+        private final Camera camera;
 
-		@Override
-		public void run()
-		{
-			cameraManager.requestPreviewFrame(new PreviewCallback()
-			{
-				@Override
-				public void onPreviewFrame(final byte[] data, final Camera camera)
-				{
-					decode(data);
-				}
-			});
-		}
+        public AutoFocusRunnable(final Camera camera) {
+            this.camera = camera;
+        }
 
-		private void decode(final byte[] data)
-		{
-			final PlanarYUVLuminanceSource source = cameraManager.buildLuminanceSource(data);
-			final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-			try
-			{
-				hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK, new ResultPointCallback()
-				{
-					@Override
-					public void foundPossibleResultPoint(final ResultPoint dot)
-					{
-						runOnUiThread(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								scannerView.addDot(dot);
-							}
-						});
-					}
-				});
-				final Result scanResult = reader.decode(bitmap, hints);
-
-				final int thumbnailWidth = source.getThumbnailWidth();
-				final int thumbnailHeight = source.getThumbnailHeight();
-				final float thumbnailScaleFactor = (float) thumbnailWidth / source.getWidth();
-
-				final Bitmap thumbnailImage = Bitmap.createBitmap(thumbnailWidth, thumbnailHeight, Bitmap.Config.ARGB_8888);
-				thumbnailImage.setPixels(source.renderThumbnail(), 0, thumbnailWidth, 0, 0, thumbnailWidth, thumbnailHeight);
-
-				runOnUiThread(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						handleResult(scanResult, thumbnailImage, thumbnailScaleFactor);
-					}
-				});
-			}
-			catch (final ReaderException x)
-			{
-				// retry
-				cameraHandler.post(fetchAndDecodeRunnable);
-			}
-			finally
-			{
-				reader.reset();
-			}
-		}
-	};
-
-	@Override
-	protected Dialog onCreateDialog(final int id)
-	{
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-		if (id == DIALOG_CAMERA_PROBLEM)
-		{
-			builder.setIcon(android.R.drawable.ic_dialog_alert);
-			builder.setTitle(R.string.scan_camera_problem_dialog_title);
-			builder.setMessage(R.string.scan_camera_problem_dialog_message);
-			builder.setNeutralButton(R.string.button_dismiss, new OnClickListener()
-			{
-				@Override
-				public void onClick(final DialogInterface dialog, final int which)
-				{
-					finish();
-				}
-			});
-			builder.setOnCancelListener(new OnCancelListener()
-			{
-				@Override
-				public void onCancel(final DialogInterface dialog)
-				{
-					finish();
-				}
-			});
-		}
-
-		return builder.create();
-	}
+        @Override
+        public void run() {
+            camera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(final boolean success, final Camera camera) {
+                    // schedule again
+                    cameraHandler.postDelayed(AutoFocusRunnable.this, AUTO_FOCUS_INTERVAL_MS);
+                }
+            });
+        }
+    }
 }

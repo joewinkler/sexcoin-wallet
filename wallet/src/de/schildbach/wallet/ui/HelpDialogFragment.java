@@ -23,38 +23,35 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Html;
+
 import de.schildbach.wallet_sxc.R;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class HelpDialogFragment extends DialogFragment
-{
-	private static final String FRAGMENT_TAG = HelpDialogFragment.class.getName();
+public final class HelpDialogFragment extends DialogFragment {
+    private static final String FRAGMENT_TAG = HelpDialogFragment.class.getName();
 
-	private static final String KEY_MESSAGE = "message";
+    private static final String KEY_MESSAGE = "message";
 
-	public static void page(final FragmentManager fm, final int messageResId)
-	{
-		final DialogFragment newFragment = HelpDialogFragment.instance(messageResId);
-		newFragment.show(fm, FRAGMENT_TAG);
-	}
+    public static void page(final FragmentManager fm, final int messageResId) {
+        final DialogFragment newFragment = HelpDialogFragment.instance(messageResId);
+        newFragment.show(fm, FRAGMENT_TAG);
+    }
 
-	private static HelpDialogFragment instance(final int messageResId)
-	{
-		final HelpDialogFragment fragment = new HelpDialogFragment();
+    private static HelpDialogFragment instance(final int messageResId) {
+        final HelpDialogFragment fragment = new HelpDialogFragment();
 
-		final Bundle args = new Bundle();
-		args.putInt(KEY_MESSAGE, messageResId);
-		fragment.setArguments(args);
+        final Bundle args = new Bundle();
+        args.putInt(KEY_MESSAGE, messageResId);
+        fragment.setArguments(args);
 
-		return fragment;
-	}
+        return fragment;
+    }
 
-	@Override
-	public Dialog onCreateDialog(final Bundle savedInstanceState)
-	{
-		final Bundle args = getArguments();
+    @Override
+    public Dialog onCreateDialog(final Bundle savedInstanceState) {
+        final Bundle args = getArguments();
         final int messageResId = args.getInt(KEY_MESSAGE);
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
@@ -62,5 +59,5 @@ public final class HelpDialogFragment extends DialogFragment
                 .setNeutralButton(R.string.button_dismiss, null);
 
         return builder.create();
-	}
+    }
 }

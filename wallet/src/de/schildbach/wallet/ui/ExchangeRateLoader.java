@@ -22,55 +22,50 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.support.v4.content.CursorLoader;
+
 import de.schildbach.wallet.Constants;
 import de.schildbach.wallet.ExchangeRatesProvider;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class ExchangeRateLoader extends CursorLoader implements OnSharedPreferenceChangeListener
-{
-	private final SharedPreferences prefs;
+public final class ExchangeRateLoader extends CursorLoader implements OnSharedPreferenceChangeListener {
+    private final SharedPreferences prefs;
 
-	public ExchangeRateLoader(final Context context)
-	{
-		super(context, ExchangeRatesProvider.contentUri(context.getPackageName()), null, ExchangeRatesProvider.KEY_CURRENCY_CODE,
-				new String[] { null }, null);
+    public ExchangeRateLoader(final Context context) {
+        super(context, ExchangeRatesProvider.contentUri(context.getPackageName()), null, ExchangeRatesProvider.KEY_CURRENCY_CODE,
+                new String[]{null}, null);
 
-		prefs = PreferenceManager.getDefaultSharedPreferences(context);
-	}
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    }
 
-	@Override
-	protected void onStartLoading()
-	{
-		super.onStartLoading();
+    @Override
+    protected void onStartLoading() {
+        super.onStartLoading();
 
-		prefs.registerOnSharedPreferenceChangeListener(this);
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
-		onCurrencyChange();
-	}
+        onCurrencyChange();
+    }
 
-	@Override
-	protected void onStopLoading()
-	{
-		prefs.unregisterOnSharedPreferenceChangeListener(this);
+    @Override
+    protected void onStopLoading() {
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
 
-		super.onStopLoading();
-	}
+        super.onStopLoading();
+    }
 
-	@Override
-	public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key)
-	{
-		if (Constants.PREFS_KEY_EXCHANGE_CURRENCY.equals(key))
-			onCurrencyChange();
-	}
+    @Override
+    public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+        if (Constants.PREFS_KEY_EXCHANGE_CURRENCY.equals(key))
+            onCurrencyChange();
+    }
 
-	private void onCurrencyChange()
-	{
-		final String exchangeCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
+    private void onCurrencyChange() {
+        final String exchangeCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
 
-		setSelectionArgs(new String[] { exchangeCurrency });
+        setSelectionArgs(new String[]{exchangeCurrency});
 
-		forceLoad();
-	}
+        forceLoad();
+    }
 }

@@ -17,8 +17,6 @@
 
 package de.schildbach.wallet.ui;
 
-import java.math.BigInteger;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -46,6 +44,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.google.bitcoin.core.Wallet;
 import com.google.bitcoin.core.Wallet.BalanceType;
 
+import java.math.BigInteger;
+
 import de.schildbach.wallet.Constants;
 import de.schildbach.wallet.ExchangeRatesProvider;
 import de.schildbach.wallet.ExchangeRatesProvider.ExchangeRate;
@@ -58,255 +58,216 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class ExchangeRatesFragment extends SherlockListFragment implements OnSharedPreferenceChangeListener
-{
-	private AbstractWalletActivity activity;
-	private WalletApplication application;
-	private Wallet wallet;
-	private SharedPreferences prefs;
-	private LoaderManager loaderManager;
+public final class ExchangeRatesFragment extends SherlockListFragment implements OnSharedPreferenceChangeListener {
+    private static final int ID_BALANCE_LOADER = 0;
+    private static final int ID_RATE_LOADER = 1;
+    private final BlockchainBroadcastReceiver broadcastReceiver = new BlockchainBroadcastReceiver();
+    private AbstractWalletActivity activity;
+    private WalletApplication application;
+    private Wallet wallet;
+    private SharedPreferences prefs;
+    private LoaderManager loaderManager;
+    private ExchangeRatesAdapter adapter;
+    private final LoaderCallbacks<Cursor> rateLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(final int id, final Bundle args) {
+            return new CursorLoader(activity, ExchangeRatesProvider.contentUri(activity.getPackageName()), null, null, null, null);
+        }
 
-	private ExchangeRatesAdapter adapter;
+        @Override
+        public void onLoadFinished(final Loader<Cursor> loader, final Cursor data) {
+            adapter.swapCursor(data);
+        }
 
-	private BigInteger balance = null;
-	private boolean replaying = false;
-	private String defaultCurrency = null;
+        @Override
+        public void onLoaderReset(final Loader<Cursor> loader) {
+            adapter.swapCursor(null);
+        }
+    };
+    private BigInteger balance = null;
+    private final LoaderCallbacks<BigInteger> balanceLoaderCallbacks = new LoaderManager.LoaderCallbacks<BigInteger>() {
+        @Override
+        public Loader<BigInteger> onCreateLoader(final int id, final Bundle args) {
+            return new WalletBalanceLoader(activity, wallet);
+        }
 
-	private static final int ID_BALANCE_LOADER = 0;
-	private static final int ID_RATE_LOADER = 1;
+        @Override
+        public void onLoadFinished(final Loader<BigInteger> loader, final BigInteger balance) {
+            ExchangeRatesFragment.this.balance = balance;
 
-	@Override
-	public void onAttach(final Activity activity)
-	{
-		super.onAttach(activity);
+            updateView();
+        }
 
-		this.activity = (AbstractWalletActivity) activity;
-		this.application = (WalletApplication) activity.getApplication();
-		this.wallet = application.getWallet();
-		this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-		this.loaderManager = getLoaderManager();
-	}
+        @Override
+        public void onLoaderReset(final Loader<BigInteger> loader) {
+        }
+    };
+    private boolean replaying = false;
+    private String defaultCurrency = null;
 
-	@Override
-	public void onActivityCreated(final Bundle savedInstanceState)
-	{
-		super.onActivityCreated(savedInstanceState);
+    @Override
+    public void onAttach(final Activity activity) {
+        super.onAttach(activity);
 
-		setEmptyText(getString(R.string.exchange_rates_fragment_empty_text));
+        this.activity = (AbstractWalletActivity) activity;
+        this.application = (WalletApplication) activity.getApplication();
+        this.wallet = application.getWallet();
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        this.loaderManager = getLoaderManager();
+    }
 
-		adapter = new ExchangeRatesAdapter(activity);
-		setListAdapter(adapter);
-	}
+    @Override
+    public void onActivityCreated(final Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-	@Override
-	public void onResume()
-	{
-		super.onResume();
+        setEmptyText(getString(R.string.exchange_rates_fragment_empty_text));
 
-		activity.registerReceiver(broadcastReceiver, new IntentFilter(BlockchainService.ACTION_BLOCKCHAIN_STATE));
+        adapter = new ExchangeRatesAdapter(activity);
+        setListAdapter(adapter);
+    }
 
-		loaderManager.initLoader(ID_BALANCE_LOADER, null, balanceLoaderCallbacks);
-		loaderManager.initLoader(ID_RATE_LOADER, null, rateLoaderCallbacks);
+    @Override
+    public void onResume() {
+        super.onResume();
 
-		defaultCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
-		prefs.registerOnSharedPreferenceChangeListener(this);
+        activity.registerReceiver(broadcastReceiver, new IntentFilter(BlockchainService.ACTION_BLOCKCHAIN_STATE));
 
-		updateView();
-	}
+        loaderManager.initLoader(ID_BALANCE_LOADER, null, balanceLoaderCallbacks);
+        loaderManager.initLoader(ID_RATE_LOADER, null, rateLoaderCallbacks);
 
-	@Override
-	public void onPause()
-	{
-		prefs.unregisterOnSharedPreferenceChangeListener(this);
+        defaultCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
-		loaderManager.destroyLoader(ID_RATE_LOADER);
-		loaderManager.destroyLoader(ID_BALANCE_LOADER);
+        updateView();
+    }
 
-		activity.unregisterReceiver(broadcastReceiver);
+    @Override
+    public void onPause() {
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
 
-		super.onPause();
-	}
+        loaderManager.destroyLoader(ID_RATE_LOADER);
+        loaderManager.destroyLoader(ID_BALANCE_LOADER);
 
-	@Override
-	public void onListItemClick(final ListView l, final View v, final int position, final long id)
-	{
-		final Cursor cursor = (Cursor) adapter.getItem(position);
-		final ExchangeRate exchangeRate = ExchangeRatesProvider.getExchangeRate(cursor);
+        activity.unregisterReceiver(broadcastReceiver);
 
-		activity.startActionMode(new ActionMode.Callback()
-		{
-			@Override
-			public boolean onCreateActionMode(final ActionMode mode, final Menu menu)
-			{
-				final MenuInflater inflater = mode.getMenuInflater();
-				inflater.inflate(R.menu.exchange_rates_context, menu);
+        super.onPause();
+    }
 
-				return true;
-			}
+    @Override
+    public void onListItemClick(final ListView l, final View v, final int position, final long id) {
+        final Cursor cursor = (Cursor) adapter.getItem(position);
+        final ExchangeRate exchangeRate = ExchangeRatesProvider.getExchangeRate(cursor);
 
-			@Override
-			public boolean onPrepareActionMode(final ActionMode mode, final Menu menu)
-			{
-				mode.setTitle(exchangeRate.currencyCode);
-				mode.setSubtitle(getString(R.string.exchange_rates_fragment_source, exchangeRate.source));
+        activity.startActionMode(new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(final ActionMode mode, final Menu menu) {
+                final MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.exchange_rates_context, menu);
 
-				return true;
-			}
+                return true;
+            }
 
-			@Override
-			public boolean onActionItemClicked(final ActionMode mode, final MenuItem item)
-			{
-				
-				if(item.getItemId() == R.id.exchange_rates_context_set_as_default){
-						handleSetAsDefault(exchangeRate.currencyCode);
-						mode.finish();
-						return true;
-				}
+            @Override
+            public boolean onPrepareActionMode(final ActionMode mode, final Menu menu) {
+                mode.setTitle(exchangeRate.currencyCode);
+                mode.setSubtitle(getString(R.string.exchange_rates_fragment_source, exchangeRate.source));
 
-				return false;
-			}
+                return true;
+            }
 
-			@Override
-			public void onDestroyActionMode(final ActionMode mode)
-			{
-			}
+            @Override
+            public boolean onActionItemClicked(final ActionMode mode, final MenuItem item) {
 
-			private void handleSetAsDefault(final String currencyCode)
-			{
-				prefs.edit().putString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, currencyCode).commit();
-			}
-		});
-	}
+                if (item.getItemId() == R.id.exchange_rates_context_set_as_default) {
+                    handleSetAsDefault(exchangeRate.currencyCode);
+                    mode.finish();
+                    return true;
+                }
 
-	@Override
-	public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key)
-	{
-		if (Constants.PREFS_KEY_EXCHANGE_CURRENCY.equals(key) || Constants.PREFS_KEY_BTC_PRECISION.equals(key))
-		{
-			defaultCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
+                return false;
+            }
 
-			updateView();
-		}
-	}
+            @Override
+            public void onDestroyActionMode(final ActionMode mode) {
+            }
 
-	private void updateView()
-	{
-		balance = application.getWallet().getBalance(BalanceType.ESTIMATED);
+            private void handleSetAsDefault(final String currencyCode) {
+                prefs.edit().putString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, currencyCode).commit();
+            }
+        });
+    }
 
-		if (adapter != null)
-		{
-			final String precision = prefs.getString(Constants.PREFS_KEY_BTC_PRECISION, Constants.PREFS_DEFAULT_BTC_PRECISION);
-			final int btcShift = precision.length() == 3 ? precision.charAt(2) - '0' : 0;
+    @Override
+    public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+        if (Constants.PREFS_KEY_EXCHANGE_CURRENCY.equals(key) || Constants.PREFS_KEY_BTC_PRECISION.equals(key)) {
+            defaultCurrency = prefs.getString(Constants.PREFS_KEY_EXCHANGE_CURRENCY, null);
 
-			final BigInteger base = btcShift == 0 ? GenericUtils.ONE_BTC : GenericUtils.ONE_MBTC;
+            updateView();
+        }
+    }
 
-			adapter.setRateBase(base);
-		}
-	}
+    private void updateView() {
+        balance = application.getWallet().getBalance(BalanceType.ESTIMATED);
 
-	private final BlockchainBroadcastReceiver broadcastReceiver = new BlockchainBroadcastReceiver();
+        if (adapter != null) {
+            final String precision = prefs.getString(Constants.PREFS_KEY_BTC_PRECISION, Constants.PREFS_DEFAULT_BTC_PRECISION);
+            final int btcShift = precision.length() == 3 ? precision.charAt(2) - '0' : 0;
 
-	private final class BlockchainBroadcastReceiver extends BroadcastReceiver
-	{
-		@Override
-		public void onReceive(final Context context, final Intent intent)
-		{
-			replaying = intent.getBooleanExtra(BlockchainService.ACTION_BLOCKCHAIN_STATE_REPLAYING, false);
+            final BigInteger base = btcShift == 0 ? GenericUtils.ONE_BTC : GenericUtils.ONE_MBTC;
 
-			updateView();
-		}
-	}
+            adapter.setRateBase(base);
+        }
+    }
 
-	private final LoaderCallbacks<Cursor> rateLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>()
-	{
-		@Override
-		public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
-		{
-			return new CursorLoader(activity, ExchangeRatesProvider.contentUri(activity.getPackageName()), null, null, null, null);
-		}
+    private final class BlockchainBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            replaying = intent.getBooleanExtra(BlockchainService.ACTION_BLOCKCHAIN_STATE_REPLAYING, false);
 
-		@Override
-		public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
-		{
-			adapter.swapCursor(data);
-		}
+            updateView();
+        }
+    }
 
-		@Override
-		public void onLoaderReset(final Loader<Cursor> loader)
-		{
-			adapter.swapCursor(null);
-		}
-	};
+    private final class ExchangeRatesAdapter extends ResourceCursorAdapter {
+        private BigInteger rateBase = GenericUtils.ONE_BTC;
 
-	private final LoaderCallbacks<BigInteger> balanceLoaderCallbacks = new LoaderManager.LoaderCallbacks<BigInteger>()
-	{
-		@Override
-		public Loader<BigInteger> onCreateLoader(final int id, final Bundle args)
-		{
-			return new WalletBalanceLoader(activity, wallet);
-		}
+        private ExchangeRatesAdapter(final Context context) {
+            super(context, R.layout.exchange_rate_row, null, true);
+        }
 
-		@Override
-		public void onLoadFinished(final Loader<BigInteger> loader, final BigInteger balance)
-		{
-			ExchangeRatesFragment.this.balance = balance;
+        public void setRateBase(final BigInteger rateBase) {
+            this.rateBase = rateBase;
 
-			updateView();
-		}
+            notifyDataSetChanged();
+        }
 
-		@Override
-		public void onLoaderReset(final Loader<BigInteger> loader)
-		{
-		}
-	};
+        @Override
+        public void bindView(final View view, final Context context, final Cursor cursor) {
+            final ExchangeRate exchangeRate = ExchangeRatesProvider.getExchangeRate(cursor);
+            final boolean isDefaultCurrency = exchangeRate.currencyCode.equals(defaultCurrency);
 
-	private final class ExchangeRatesAdapter extends ResourceCursorAdapter
-	{
-		private BigInteger rateBase = GenericUtils.ONE_BTC;
+            view.setBackgroundResource(isDefaultCurrency ? R.color.bg_list_selected : R.color.bg_list);
 
-		private ExchangeRatesAdapter(final Context context)
-		{
-			super(context, R.layout.exchange_rate_row, null, true);
-		}
+            final View defaultView = view.findViewById(R.id.exchange_rate_row_default);
+            defaultView.setVisibility(isDefaultCurrency ? View.VISIBLE : View.INVISIBLE);
 
-		public void setRateBase(final BigInteger rateBase)
-		{
-			this.rateBase = rateBase;
+            final TextView currencyCodeView = (TextView) view.findViewById(R.id.exchange_rate_row_currency_code);
+            currencyCodeView.setText(exchangeRate.currencyCode);
 
-			notifyDataSetChanged();
-		}
+            final CurrencyTextView rateView = (CurrencyTextView) view.findViewById(R.id.exchange_rate_row_rate);
+            rateView.setPrecision(Constants.LOCAL_PRECISION, 0);
+            rateView.setAmount(WalletUtils.localValue(rateBase, exchangeRate.rate));
 
-		@Override
-		public void bindView(final View view, final Context context, final Cursor cursor)
-		{
-			final ExchangeRate exchangeRate = ExchangeRatesProvider.getExchangeRate(cursor);
-			final boolean isDefaultCurrency = exchangeRate.currencyCode.equals(defaultCurrency);
-
-			view.setBackgroundResource(isDefaultCurrency ? R.color.bg_list_selected : R.color.bg_list);
-
-			final View defaultView = view.findViewById(R.id.exchange_rate_row_default);
-			defaultView.setVisibility(isDefaultCurrency ? View.VISIBLE : View.INVISIBLE);
-
-			final TextView currencyCodeView = (TextView) view.findViewById(R.id.exchange_rate_row_currency_code);
-			currencyCodeView.setText(exchangeRate.currencyCode);
-
-			final CurrencyTextView rateView = (CurrencyTextView) view.findViewById(R.id.exchange_rate_row_rate);
-			rateView.setPrecision(Constants.LOCAL_PRECISION, 0);
-			rateView.setAmount(WalletUtils.localValue(rateBase, exchangeRate.rate));
-
-			final CurrencyTextView walletView = (CurrencyTextView) view.findViewById(R.id.exchange_rate_row_balance);
-			walletView.setPrecision(Constants.LOCAL_PRECISION, 0);
-			if (!replaying)
-			{
-				walletView.setAmount(WalletUtils.localValue(balance, exchangeRate.rate));
-				walletView.setStrikeThru(Constants.TEST);
-			}
-			else
-			{
-				walletView.setText("n/a");
-				walletView.setStrikeThru(false);
-			}
-			walletView.setTextColor(getResources().getColor(R.color.fg_less_significant));
-		}
-	}
+            final CurrencyTextView walletView = (CurrencyTextView) view.findViewById(R.id.exchange_rate_row_balance);
+            walletView.setPrecision(Constants.LOCAL_PRECISION, 0);
+            if (!replaying) {
+                walletView.setAmount(WalletUtils.localValue(balance, exchangeRate.rate));
+                walletView.setStrikeThru(Constants.TEST);
+            } else {
+                walletView.setText("n/a");
+                walletView.setStrikeThru(false);
+            }
+            walletView.setTextColor(getResources().getColor(R.color.fg_less_significant));
+        }
+    }
 }

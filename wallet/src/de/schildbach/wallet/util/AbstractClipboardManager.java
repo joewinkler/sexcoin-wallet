@@ -21,27 +21,27 @@ public class AbstractClipboardManager {
     // Labeled text copy - the label is only used on newer versions of Android
     // It is ignored in old versions.
     public void setText(String label, String text) {
-        if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            ((ClipboardManager)this.clipboardManager).setText(text);
+        if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            ((ClipboardManager) this.clipboardManager).setText(text);
         } else {
             android.content.ClipData clip = android.content.ClipData.newPlainText(label, text);
-            ((android.content.ClipboardManager)this.clipboardManager).setPrimaryClip(clip);
+            ((android.content.ClipboardManager) this.clipboardManager).setPrimaryClip(clip);
         }
     }
 
     public CharSequence getText() {
-        if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return ((ClipboardManager)this.clipboardManager).getText();
+        if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            return ((ClipboardManager) this.clipboardManager).getText();
         } else {
-            return ((android.content.ClipboardManager)this.clipboardManager).getText();
+            return ((android.content.ClipboardManager) this.clipboardManager).getText();
         }
     }
 
     public boolean hasText() {
-        if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            return ((ClipboardManager)this.clipboardManager).hasText();
+        if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            return ((ClipboardManager) this.clipboardManager).hasText();
         } else {
-            return ((android.content.ClipboardManager)this.clipboardManager).hasText();
+            return ((android.content.ClipboardManager) this.clipboardManager).hasText();
         }
     }
 }

@@ -1,58 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>integration-android</artifactId>
-	<packaging>apklib</packaging>
-	<name>Bitcoin Integration for Android</name>
+    <artifactId>integration-android</artifactId>
+    <packaging>apklib</packaging>
+    <name>Bitcoin Integration for Android</name>
 
-	<parent>
-		<groupId>de.schildbach.wallet</groupId>
-		<artifactId>base</artifactId>
-		<version>1</version>
-	</parent>
+    <parent>
+        <groupId>de.schildbach.wallet</groupId>
+        <artifactId>base</artifactId>
+        <version>1</version>
+    </parent>
 
-	<dependencies>
+    <dependencies>
 
-		<!-- android.*, java.*, javax.* -->
-		<dependency>
-			<groupId>com.google.android</groupId>
-			<artifactId>android</artifactId>
-			<version>2.3.3</version>
-			<scope>provided</scope>
-		</dependency>
+        <!-- android.*, java.*, javax.* -->
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>2.3.3</version>
+            <scope>provided</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
-				<artifactId>android-maven-plugin</artifactId>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                <artifactId>android-maven-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-					<sdk>
-						<platform>10</platform>
-					</sdk>
-					<!-- Force the generated BuildConfig into target/generated-sources where it is ignored,
-					 see https://code.google.com/p/maven-android-plugin/issues/detail?id=388 -->
-					<genDirectory>target/generated-sources/r</genDirectory>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+                    <sdk>
+                        <platform>10</platform>
+                    </sdk>
+                    <!-- Force the generated BuildConfig into target/generated-sources where it is ignored,
+                     see https://code.google.com/p/maven-android-plugin/issues/detail?id=388 -->
+                    <genDirectory>target/generated-sources/r</genDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-	<groupId>de.schildbach.wallet_sxc</groupId>
-	<url>sexcoin.co.in</url>
-	<organization>
-		<name>SexCoin Developer</name>
-		<url>sexcoin.co.in</url>
-	</organization>
+    <groupId>de.schildbach.wallet_sxc</groupId>
+    <url>sexcoin.co.in</url>
+    <organization>
+        <name>SexCoin Developer</name>
+        <url>sexcoin.co.in</url>
+    </organization>
 </project>

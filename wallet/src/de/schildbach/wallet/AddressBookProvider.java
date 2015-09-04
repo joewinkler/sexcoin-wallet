@@ -17,10 +17,6 @@
 
 package de.schildbach.wallet;
 
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,219 +26,190 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public class AddressBookProvider extends ContentProvider
-{
-	private static final String DATABASE_TABLE = "address_book";
+public class AddressBookProvider extends ContentProvider {
+    public static final String KEY_ROWID = "_id";
+    public static final String KEY_ADDRESS = "address";
+    public static final String KEY_LABEL = "label";
+    public static final String SELECTION_QUERY = "q";
+    public static final String SELECTION_IN = "in";
+    public static final String SELECTION_NOTIN = "notin";
+    private static final String DATABASE_TABLE = "address_book";
+    private Helper helper;
 
-	public static final String KEY_ROWID = "_id";
-	public static final String KEY_ADDRESS = "address";
-	public static final String KEY_LABEL = "label";
+    public static Uri contentUri(@Nonnull final String packageName) {
+        return Uri.parse("content://" + packageName + '.' + DATABASE_TABLE);
+    }
 
-	public static final String SELECTION_QUERY = "q";
-	public static final String SELECTION_IN = "in";
-	public static final String SELECTION_NOTIN = "notin";
+    public static String resolveLabel(final Context context, @Nonnull final String address) {
+        String label = null;
 
-	public static Uri contentUri(@Nonnull final String packageName)
-	{
-		return Uri.parse("content://" + packageName + '.' + DATABASE_TABLE);
-	}
+        final Uri uri = contentUri(context.getPackageName()).buildUpon().appendPath(address).build();
+        final Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
 
-	public static String resolveLabel(final Context context, @Nonnull final String address)
-	{
-		String label = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst())
+                label = cursor.getString(cursor.getColumnIndexOrThrow(AddressBookProvider.KEY_LABEL));
 
-		final Uri uri = contentUri(context.getPackageName()).buildUpon().appendPath(address).build();
-		final Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+            cursor.close();
+        }
 
-		if (cursor != null)
-		{
-			if (cursor.moveToFirst())
-				label = cursor.getString(cursor.getColumnIndexOrThrow(AddressBookProvider.KEY_LABEL));
+        return label;
+    }
 
-			cursor.close();
-		}
+    private static void appendAddresses(@Nonnull final SQLiteQueryBuilder qb, @Nonnull final String[] addresses) {
+        for (final String address : addresses) {
+            qb.appendWhereEscapeString(address.trim());
+            if (!address.equals(addresses[addresses.length - 1]))
+                qb.appendWhere(",");
+        }
+    }
 
-		return label;
-	}
+    @Override
+    public boolean onCreate() {
+        helper = new Helper(getContext());
+        return true;
+    }
 
-	private Helper helper;
+    @Override
+    public String getType(final Uri uri) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public boolean onCreate()
-	{
-		helper = new Helper(getContext());
-		return true;
-	}
+    @Override
+    public Uri insert(final Uri uri, final ContentValues values) {
+        if (uri.getPathSegments().size() != 1)
+            throw new IllegalArgumentException(uri.toString());
 
-	@Override
-	public String getType(final Uri uri)
-	{
-		throw new UnsupportedOperationException();
-	}
+        final String address = uri.getLastPathSegment();
+        values.put(KEY_ADDRESS, address);
 
-	@Override
-	public Uri insert(final Uri uri, final ContentValues values)
-	{
-		if (uri.getPathSegments().size() != 1)
-			throw new IllegalArgumentException(uri.toString());
+        long rowId = helper.getWritableDatabase().insertOrThrow(DATABASE_TABLE, null, values);
 
-		final String address = uri.getLastPathSegment();
-		values.put(KEY_ADDRESS, address);
+        final Uri rowUri = contentUri(getContext().getPackageName()).buildUpon().appendPath(address).appendPath(Long.toString(rowId)).build();
 
-		long rowId = helper.getWritableDatabase().insertOrThrow(DATABASE_TABLE, null, values);
+        getContext().getContentResolver().notifyChange(rowUri, null);
 
-		final Uri rowUri = contentUri(getContext().getPackageName()).buildUpon().appendPath(address).appendPath(Long.toString(rowId)).build();
+        return rowUri;
+    }
 
-		getContext().getContentResolver().notifyChange(rowUri, null);
+    @Override
+    public int update(final Uri uri, final ContentValues values, final String selection, final String[] selectionArgs) {
+        if (uri.getPathSegments().size() != 1)
+            throw new IllegalArgumentException(uri.toString());
 
-		return rowUri;
-	}
+        final String address = uri.getLastPathSegment();
 
-	@Override
-	public int update(final Uri uri, final ContentValues values, final String selection, final String[] selectionArgs)
-	{
-		if (uri.getPathSegments().size() != 1)
-			throw new IllegalArgumentException(uri.toString());
+        final int count = helper.getWritableDatabase().update(DATABASE_TABLE, values, KEY_ADDRESS + "=?", new String[]{address});
 
-		final String address = uri.getLastPathSegment();
+        if (count > 0)
+            getContext().getContentResolver().notifyChange(uri, null);
 
-		final int count = helper.getWritableDatabase().update(DATABASE_TABLE, values, KEY_ADDRESS + "=?", new String[] { address });
+        return count;
+    }
 
-		if (count > 0)
-			getContext().getContentResolver().notifyChange(uri, null);
+    @Override
+    public int delete(final Uri uri, final String selection, final String[] selectionArgs) {
+        final List<String> pathSegments = uri.getPathSegments();
+        if (pathSegments.size() != 1)
+            throw new IllegalArgumentException(uri.toString());
 
-		return count;
-	}
+        final String address = uri.getLastPathSegment();
 
-	@Override
-	public int delete(final Uri uri, final String selection, final String[] selectionArgs)
-	{
-		final List<String> pathSegments = uri.getPathSegments();
-		if (pathSegments.size() != 1)
-			throw new IllegalArgumentException(uri.toString());
+        final int count = helper.getWritableDatabase().delete(DATABASE_TABLE, KEY_ADDRESS + "=?", new String[]{address});
 
-		final String address = uri.getLastPathSegment();
+        if (count > 0)
+            getContext().getContentResolver().notifyChange(uri, null);
 
-		final int count = helper.getWritableDatabase().delete(DATABASE_TABLE, KEY_ADDRESS + "=?", new String[] { address });
+        return count;
+    }
 
-		if (count > 0)
-			getContext().getContentResolver().notifyChange(uri, null);
+    @Override
+    public Cursor query(final Uri uri, final String[] projection, final String originalSelection, final String[] originalSelectionArgs,
+                        final String sortOrder) {
+        final SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(DATABASE_TABLE);
 
-		return count;
-	}
+        final List<String> pathSegments = uri.getPathSegments();
+        if (pathSegments.size() > 1)
+            throw new IllegalArgumentException(uri.toString());
 
-	@Override
-	public Cursor query(final Uri uri, final String[] projection, final String originalSelection, final String[] originalSelectionArgs,
-			final String sortOrder)
-	{
-		final SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-		qb.setTables(DATABASE_TABLE);
+        String selection = null;
+        String[] selectionArgs = null;
 
-		final List<String> pathSegments = uri.getPathSegments();
-		if (pathSegments.size() > 1)
-			throw new IllegalArgumentException(uri.toString());
+        if (pathSegments.size() == 1) {
+            final String address = uri.getLastPathSegment();
 
-		String selection = null;
-		String[] selectionArgs = null;
+            qb.appendWhere(KEY_ADDRESS + "=");
+            qb.appendWhereEscapeString(address);
+        } else if (SELECTION_IN.equals(originalSelection)) {
+            final String[] addresses = originalSelectionArgs[0].trim().split(",");
 
-		if (pathSegments.size() == 1)
-		{
-			final String address = uri.getLastPathSegment();
+            qb.appendWhere(KEY_ADDRESS + " IN (");
+            appendAddresses(qb, addresses);
+            qb.appendWhere(")");
+        } else if (SELECTION_NOTIN.equals(originalSelection)) {
+            final String[] addresses = originalSelectionArgs[0].trim().split(",");
 
-			qb.appendWhere(KEY_ADDRESS + "=");
-			qb.appendWhereEscapeString(address);
-		}
-		else if (SELECTION_IN.equals(originalSelection))
-		{
-			final String[] addresses = originalSelectionArgs[0].trim().split(",");
+            qb.appendWhere(KEY_ADDRESS + " NOT IN (");
+            appendAddresses(qb, addresses);
+            qb.appendWhere(")");
+        } else if (SELECTION_QUERY.equals(originalSelection)) {
+            final String query = '%' + originalSelectionArgs[0].trim() + '%';
+            selection = KEY_ADDRESS + " LIKE ? OR " + KEY_LABEL + " LIKE ?";
+            selectionArgs = new String[]{query, query};
+        }
 
-			qb.appendWhere(KEY_ADDRESS + " IN (");
-			appendAddresses(qb, addresses);
-			qb.appendWhere(")");
-		}
-		else if (SELECTION_NOTIN.equals(originalSelection))
-		{
-			final String[] addresses = originalSelectionArgs[0].trim().split(",");
+        final Cursor cursor = qb.query(helper.getReadableDatabase(), projection, selection, selectionArgs, null, null, sortOrder);
 
-			qb.appendWhere(KEY_ADDRESS + " NOT IN (");
-			appendAddresses(qb, addresses);
-			qb.appendWhere(")");
-		}
-		else if (SELECTION_QUERY.equals(originalSelection))
-		{
-			final String query = '%' + originalSelectionArgs[0].trim() + '%';
-			selection = KEY_ADDRESS + " LIKE ? OR " + KEY_LABEL + " LIKE ?";
-			selectionArgs = new String[] { query, query };
-		}
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
-		final Cursor cursor = qb.query(helper.getReadableDatabase(), projection, selection, selectionArgs, null, null, sortOrder);
+        return cursor;
+    }
 
-		cursor.setNotificationUri(getContext().getContentResolver(), uri);
+    private static class Helper extends SQLiteOpenHelper {
+        private static final String DATABASE_NAME = "address_book";
+        private static final int DATABASE_VERSION = 1;
 
-		return cursor;
-	}
+        private static final String DATABASE_CREATE = "CREATE TABLE " + DATABASE_TABLE + " (" //
+                + KEY_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT, " //
+                + KEY_ADDRESS + " TEXT NOT NULL, " //
+                + KEY_LABEL + " TEXT NULL);";
 
-	private static void appendAddresses(@Nonnull final SQLiteQueryBuilder qb, @Nonnull final String[] addresses)
-	{
-		for (final String address : addresses)
-		{
-			qb.appendWhereEscapeString(address.trim());
-			if (!address.equals(addresses[addresses.length - 1]))
-				qb.appendWhere(",");
-		}
-	}
+        public Helper(final Context context) {
+            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        }
 
-	private static class Helper extends SQLiteOpenHelper
-	{
-		private static final String DATABASE_NAME = "address_book";
-		private static final int DATABASE_VERSION = 1;
+        @Override
+        public void onCreate(final SQLiteDatabase db) {
+            db.execSQL(DATABASE_CREATE);
+        }
 
-		private static final String DATABASE_CREATE = "CREATE TABLE " + DATABASE_TABLE + " (" //
-				+ KEY_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT, " //
-				+ KEY_ADDRESS + " TEXT NOT NULL, " //
-				+ KEY_LABEL + " TEXT NULL);";
+        @Override
+        public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+            db.beginTransaction();
+            try {
+                for (int v = oldVersion; v < newVersion; v++)
+                    upgrade(db, v);
 
-		public Helper(final Context context)
-		{
-			super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		}
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        }
 
-		@Override
-		public void onCreate(final SQLiteDatabase db)
-		{
-			db.execSQL(DATABASE_CREATE);
-		}
-
-		@Override
-		public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion)
-		{
-			db.beginTransaction();
-			try
-			{
-				for (int v = oldVersion; v < newVersion; v++)
-					upgrade(db, v);
-
-				db.setTransactionSuccessful();
-			}
-			finally
-			{
-				db.endTransaction();
-			}
-		}
-
-		private void upgrade(final SQLiteDatabase db, final int oldVersion)
-		{
-			if (oldVersion == 1)
-			{
-				// future
-			}
-			else
-			{
-				throw new UnsupportedOperationException("old=" + oldVersion);
-			}
-		}
-	}
+        private void upgrade(final SQLiteDatabase db, final int oldVersion) {
+            if (oldVersion == 1) {
+                // future
+            } else {
+                throw new UnsupportedOperationException("old=" + oldVersion);
+            }
+        }
+    }
 }

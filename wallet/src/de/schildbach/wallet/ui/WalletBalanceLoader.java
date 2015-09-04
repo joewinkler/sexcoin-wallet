@@ -17,68 +17,61 @@
 
 package de.schildbach.wallet.ui;
 
-import java.math.BigInteger;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 
 import com.google.bitcoin.core.Wallet;
 import com.google.bitcoin.core.Wallet.BalanceType;
-
 import com.google.bitcoin.script.Script;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import de.schildbach.wallet.util.ThrottlingWalletChangeListener;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class WalletBalanceLoader extends AsyncTaskLoader<BigInteger>
-{
-	private final Wallet wallet;
-
-	public WalletBalanceLoader(final Context context, @Nonnull final Wallet wallet)
-	{
-		super(context);
-
-		this.wallet = wallet;
-	}
-
-	@Override
-	protected void onStartLoading()
-	{
-		super.onStartLoading();
-
-		wallet.addEventListener(walletChangeListener);
-
-		forceLoad();
-	}
-
-	@Override
-	protected void onStopLoading()
-	{
-		wallet.removeEventListener(walletChangeListener);
-		walletChangeListener.removeCallbacks();
-
-		super.onStopLoading();
-	}
-
-	@Override
-	public BigInteger loadInBackground()
-	{
-		return wallet.getBalance(BalanceType.ESTIMATED);
-	}
-
-	private final ThrottlingWalletChangeListener walletChangeListener = new ThrottlingWalletChangeListener()
-	{
-		@Override
-		public void onThrottledWalletChanged()
-		{
-			forceLoad();
-		}
+public final class WalletBalanceLoader extends AsyncTaskLoader<BigInteger> {
+    private final Wallet wallet;
+    private final ThrottlingWalletChangeListener walletChangeListener = new ThrottlingWalletChangeListener() {
+        @Override
+        public void onThrottledWalletChanged() {
+            forceLoad();
+        }
 
         @Override
-        public void onScriptsAdded(Wallet wallet, List<Script> scripts) { }
+        public void onScriptsAdded(Wallet wallet, List<Script> scripts) {
+        }
     };
+
+    public WalletBalanceLoader(final Context context, @Nonnull final Wallet wallet) {
+        super(context);
+
+        this.wallet = wallet;
+    }
+
+    @Override
+    protected void onStartLoading() {
+        super.onStartLoading();
+
+        wallet.addEventListener(walletChangeListener);
+
+        forceLoad();
+    }
+
+    @Override
+    protected void onStopLoading() {
+        wallet.removeEventListener(walletChangeListener);
+        walletChangeListener.removeCallbacks();
+
+        super.onStopLoading();
+    }
+
+    @Override
+    public BigInteger loadInBackground() {
+        return wallet.getBalance(BalanceType.ESTIMATED);
+    }
 }

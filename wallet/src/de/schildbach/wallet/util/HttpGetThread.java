@@ -17,6 +17,11 @@
 
 package de.schildbach.wallet.util;
 
+import android.content.res.AssetManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,85 +34,70 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import android.content.res.AssetManager;
 import de.schildbach.wallet.Constants;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public abstract class HttpGetThread extends Thread
-{
-	private final AssetManager assets;
-	private final String url;
+public abstract class HttpGetThread extends Thread {
+    private static final Logger log = LoggerFactory.getLogger(HttpGetThread.class);
+    private final AssetManager assets;
+    private final String url;
 
-	private static final Logger log = LoggerFactory.getLogger(HttpGetThread.class);
+    public HttpGetThread(@Nonnull final AssetManager assets, @Nonnull final String url) {
+        this.assets = assets;
+        this.url = url;
+    }
 
-	public HttpGetThread(@Nonnull final AssetManager assets, @Nonnull final String url)
-	{
-		this.assets = assets;
-		this.url = url;
-	}
+    @Override
+    public void run() {
+        HttpURLConnection connection = null;
 
-	@Override
-	public void run()
-	{
-		HttpURLConnection connection = null;
+        //log.debug("querying \"" + url + "\"...");
 
-		//log.debug("querying \"" + url + "\"...");
+        try {
+            connection = (HttpURLConnection) new URL(url).openConnection();
 
-		try
-		{
-			connection = (HttpURLConnection) new URL(url).openConnection();
+            if (connection instanceof HttpsURLConnection) {
+                final InputStream keystoreInputStream = assets.open("ssl-keystore");
 
-			if (connection instanceof HttpsURLConnection)
-			{
-				final InputStream keystoreInputStream = assets.open("ssl-keystore");
+                final KeyStore keystore = KeyStore.getInstance("BKS");
+                keystore.load(keystoreInputStream, "password".toCharArray());
+                keystoreInputStream.close();
 
-				final KeyStore keystore = KeyStore.getInstance("BKS");
-				keystore.load(keystoreInputStream, "password".toCharArray());
-				keystoreInputStream.close();
+                final TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
+                tmf.init(keystore);
 
-				final TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
-				tmf.init(keystore);
+                final SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, tmf.getTrustManagers(), null);
 
-				final SSLContext sslContext = SSLContext.getInstance("TLS");
-				sslContext.init(null, tmf.getTrustManagers(), null);
+                ((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
+            }
 
-				((HttpsURLConnection) connection).setSSLSocketFactory(sslContext.getSocketFactory());
-			}
+            connection.setConnectTimeout(Constants.HTTP_TIMEOUT_MS);
+            connection.setReadTimeout(Constants.HTTP_TIMEOUT_MS);
+            connection.setRequestProperty("Accept-Charset", "utf-8");
+            connection.connect();
 
-			connection.setConnectTimeout(Constants.HTTP_TIMEOUT_MS);
-			connection.setReadTimeout(Constants.HTTP_TIMEOUT_MS);
-			connection.setRequestProperty("Accept-Charset", "utf-8");
-			connection.connect();
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                final long serverTime = connection.getDate();
+                // TODO parse connection.getContentType() for charset
 
-			if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
-			{
-				final long serverTime = connection.getDate();
-				// TODO parse connection.getContentType() for charset
+                final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Constants.UTF_8), 64);
+                final String line = reader.readLine().trim();
+                reader.close();
 
-				final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Constants.UTF_8), 64);
-				final String line = reader.readLine().trim();
-				reader.close();
+                handleLine(line, serverTime);
+            }
+        } catch (final Exception x) {
+            handleException(x);
+        } finally {
+            if (connection != null)
+                connection.disconnect();
+        }
+    }
 
-				handleLine(line, serverTime);
-			}
-		}
-		catch (final Exception x)
-		{
-			handleException(x);
-		}
-		finally
-		{
-			if (connection != null)
-				connection.disconnect();
-		}
-	}
+    protected abstract void handleLine(@Nonnull String line, long serverTime);
 
-	protected abstract void handleLine(@Nonnull String line, long serverTime);
-
-	protected abstract void handleException(@Nonnull Exception x);
+    protected abstract void handleException(@Nonnull Exception x);
 }

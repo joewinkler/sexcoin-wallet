@@ -50,125 +50,108 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class WalletAddressFragment extends Fragment
-{
-	private FragmentActivity activity;
-	private WalletApplication application;
-	private SharedPreferences prefs;
-	private NfcManager nfcManager;
+public final class WalletAddressFragment extends Fragment {
+    private FragmentActivity activity;
+    private WalletApplication application;
+    private SharedPreferences prefs;
+    private NfcManager nfcManager;
 
-	private View bitcoinAddressButton;
-	private TextView bitcoinAddressLabel;
-	private ImageView bitcoinAddressQrView;
+    private View bitcoinAddressButton;
+    private TextView bitcoinAddressLabel;
+    private ImageView bitcoinAddressQrView;
 
-	private Address lastSelectedAddress;
+    private Address lastSelectedAddress;
 
-	private Bitmap qrCodeBitmap;
+    private Bitmap qrCodeBitmap;
+    private final OnSharedPreferenceChangeListener prefsListener = new OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+            if (Constants.PREFS_KEY_SELECTED_ADDRESS.equals(key))
+                updateView();
+        }
+    };
 
-	@Override
-	public void onAttach(final Activity activity)
-	{
-		super.onAttach(activity);
+    @Override
+    public void onAttach(final Activity activity) {
+        super.onAttach(activity);
 
-		this.activity = (FragmentActivity) activity;
-		this.application = (WalletApplication) activity.getApplication();
-		this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-		this.nfcManager = (NfcManager) activity.getSystemService(Context.NFC_SERVICE);
-	}
+        this.activity = (FragmentActivity) activity;
+        this.application = (WalletApplication) activity.getApplication();
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        this.nfcManager = (NfcManager) activity.getSystemService(Context.NFC_SERVICE);
+    }
 
-	@Override
-	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState)
-	{
-		final View view = inflater.inflate(R.layout.wallet_address_fragment, container, false);
-		bitcoinAddressButton = view.findViewById(R.id.bitcoin_address_button);
-		bitcoinAddressLabel = (TextView) view.findViewById(R.id.bitcoin_address_label);
-		bitcoinAddressQrView = (ImageView) view.findViewById(R.id.bitcoin_address_qr);
+    @Override
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.wallet_address_fragment, container, false);
+        bitcoinAddressButton = view.findViewById(R.id.bitcoin_address_button);
+        bitcoinAddressLabel = (TextView) view.findViewById(R.id.bitcoin_address_label);
+        bitcoinAddressQrView = (ImageView) view.findViewById(R.id.bitcoin_address_qr);
 
-		bitcoinAddressButton.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View v)
-			{
-				AddressBookActivity.start(activity, false);
-			}
-		});
+        bitcoinAddressButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                AddressBookActivity.start(activity, false);
+            }
+        });
 
-		bitcoinAddressQrView.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View v)
-			{
-				handleShowQRCode();
-			}
-		});
+        bitcoinAddressQrView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                handleShowQRCode();
+            }
+        });
 
-		bitcoinAddressQrView.setOnLongClickListener(new OnLongClickListener()
-		{
-			@Override
-			public boolean onLongClick(final View v)
-			{
-				startActivity(new Intent(activity, RequestCoinsActivity.class));
-				return true;
-			}
-		});
+        bitcoinAddressQrView.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(final View v) {
+                startActivity(new Intent(activity, RequestCoinsActivity.class));
+                return true;
+            }
+        });
 
-		return view;
-	}
+        return view;
+    }
 
-	@Override
-	public void onResume()
-	{
-		super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
 
-		prefs.registerOnSharedPreferenceChangeListener(prefsListener);
+        prefs.registerOnSharedPreferenceChangeListener(prefsListener);
 
-		updateView();
-	}
+        updateView();
+    }
 
-	@Override
-	public void onPause()
-	{
-		prefs.unregisterOnSharedPreferenceChangeListener(prefsListener);
+    @Override
+    public void onPause() {
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsListener);
 
-		Nfc.unpublish(nfcManager, getActivity());
+        Nfc.unpublish(nfcManager, getActivity());
 
-		super.onPause();
-	}
+        super.onPause();
+    }
 
-	private void updateView()
-	{
-		final Address selectedAddress = application.determineSelectedAddress();
+    private void updateView() {
+        final Address selectedAddress = application.determineSelectedAddress();
 
-		if (!selectedAddress.equals(lastSelectedAddress))
-		{
-			lastSelectedAddress = selectedAddress;
+        if (!selectedAddress.equals(lastSelectedAddress)) {
+            lastSelectedAddress = selectedAddress;
 
-			bitcoinAddressLabel.setText(WalletUtils.formatAddress(selectedAddress, Constants.ADDRESS_FORMAT_GROUP_SIZE,
-					Constants.ADDRESS_FORMAT_LINE_SIZE));
+            bitcoinAddressLabel.setText(WalletUtils.formatAddress(selectedAddress, Constants.ADDRESS_FORMAT_GROUP_SIZE,
+                    Constants.ADDRESS_FORMAT_LINE_SIZE));
 
-			final String addressStr = BitcoinURI.convertToBitcoinURI(Constants.NETWORK_PARAMETERS, selectedAddress, null,
+            final String addressStr = BitcoinURI.convertToBitcoinURI(Constants.NETWORK_PARAMETERS, selectedAddress, null,
                     null, null);
 
-			final int size = (int) (256 * getResources().getDisplayMetrics().density);
-			qrCodeBitmap = Qr.bitmap(addressStr, size);
-			bitcoinAddressQrView.setImageBitmap(qrCodeBitmap);
+            final int size = (int) (256 * getResources().getDisplayMetrics().density);
+            qrCodeBitmap = Qr.bitmap(addressStr, size);
+            bitcoinAddressQrView.setImageBitmap(qrCodeBitmap);
 
-			Nfc.publishUri(nfcManager, getActivity(), addressStr);
-		}
-	}
+            Nfc.publishUri(nfcManager, getActivity(), addressStr);
+        }
+    }
 
-	private void handleShowQRCode()
-	{
-		BitmapFragment.show(getFragmentManager(), qrCodeBitmap);
-	}
-
-	private final OnSharedPreferenceChangeListener prefsListener = new OnSharedPreferenceChangeListener()
-	{
-		@Override
-		public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key)
-		{
-			if (Constants.PREFS_KEY_SELECTED_ADDRESS.equals(key))
-				updateView();
-		}
-	};
+    private void handleShowQRCode() {
+        BitmapFragment.show(getFragmentManager(), qrCodeBitmap);
+    }
 }

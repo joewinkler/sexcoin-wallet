@@ -17,10 +17,6 @@
 
 package de.schildbach.wallet;
 
-import java.math.BigInteger;
-
-import javax.annotation.Nonnull;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -35,6 +31,10 @@ import android.widget.RemoteViews;
 import com.google.bitcoin.core.Wallet;
 import com.google.bitcoin.core.Wallet.BalanceType;
 
+import java.math.BigInteger;
+
+import javax.annotation.Nonnull;
+
 import de.schildbach.wallet.ui.RequestCoinsActivity;
 import de.schildbach.wallet.ui.SendCoinsActivity;
 import de.schildbach.wallet.ui.SendCoinsQrActivity;
@@ -46,46 +46,42 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public class WalletBalanceWidgetProvider extends AppWidgetProvider
-{
-	@Override
-	public void onUpdate(final Context context, final AppWidgetManager appWidgetManager, final int[] appWidgetIds)
-	{
-		final WalletApplication application = (WalletApplication) context.getApplicationContext();
-		final Wallet wallet = application.getWallet();
-		final BigInteger balance = wallet.getBalance(BalanceType.ESTIMATED);
+public class WalletBalanceWidgetProvider extends AppWidgetProvider {
+    public static void updateWidgets(final Context context, @Nonnull final AppWidgetManager appWidgetManager, @Nonnull final int[] appWidgetIds,
+                                     @Nonnull final BigInteger balance) {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final String precision = prefs.getString(Constants.PREFS_KEY_BTC_PRECISION, Constants.PREFS_DEFAULT_BTC_PRECISION);
+        final int btcPrecision = precision.charAt(0) - '0';
+        final int btcShift = precision.length() == 3 ? precision.charAt(2) - '0' : 0;
 
-		updateWidgets(context, appWidgetManager, appWidgetIds, balance);
-	}
+        final Editable balanceStr = new SpannableStringBuilder(GenericUtils.formatValue(balance, btcPrecision, btcShift));
+        WalletUtils.formatSignificant(balanceStr, WalletUtils.SMALLER_SPAN);
 
-	public static void updateWidgets(final Context context, @Nonnull final AppWidgetManager appWidgetManager, @Nonnull final int[] appWidgetIds,
-			@Nonnull final BigInteger balance)
-	{
-		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		final String precision = prefs.getString(Constants.PREFS_KEY_BTC_PRECISION, Constants.PREFS_DEFAULT_BTC_PRECISION);
-		final int btcPrecision = precision.charAt(0) - '0';
-		final int btcShift = precision.length() == 3 ? precision.charAt(2) - '0' : 0;
+        final String prefix = btcShift == 0 ? Constants.CURRENCY_CODE_BTC : Constants.CURRENCY_CODE_MBTC;
 
-		final Editable balanceStr = new SpannableStringBuilder(GenericUtils.formatValue(balance, btcPrecision, btcShift));
-		WalletUtils.formatSignificant(balanceStr, WalletUtils.SMALLER_SPAN);
+        for (final int appWidgetId : appWidgetIds) {
+            final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.wallet_balance_widget_content);
+            views.setTextViewText(R.id.widget_wallet_prefix, prefix);
+            views.setTextViewText(R.id.widget_wallet_balance, balanceStr);
+            views.setOnClickPendingIntent(R.id.widget_button_balance,
+                    PendingIntent.getActivity(context, 0, new Intent(context, WalletActivity.class), 0));
+            views.setOnClickPendingIntent(R.id.widget_button_request,
+                    PendingIntent.getActivity(context, 0, new Intent(context, RequestCoinsActivity.class), 0));
+            views.setOnClickPendingIntent(R.id.widget_button_send,
+                    PendingIntent.getActivity(context, 0, new Intent(context, SendCoinsActivity.class), 0));
+            views.setOnClickPendingIntent(R.id.widget_button_send_qr,
+                    PendingIntent.getActivity(context, 0, new Intent(context, SendCoinsQrActivity.class), 0));
 
-		final String prefix = btcShift == 0 ? Constants.CURRENCY_CODE_BTC : Constants.CURRENCY_CODE_MBTC;
+            appWidgetManager.updateAppWidget(appWidgetId, views);
+        }
+    }
 
-		for (final int appWidgetId : appWidgetIds)
-		{
-			final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.wallet_balance_widget_content);
-			views.setTextViewText(R.id.widget_wallet_prefix, prefix);
-			views.setTextViewText(R.id.widget_wallet_balance, balanceStr);
-			views.setOnClickPendingIntent(R.id.widget_button_balance,
-					PendingIntent.getActivity(context, 0, new Intent(context, WalletActivity.class), 0));
-			views.setOnClickPendingIntent(R.id.widget_button_request,
-					PendingIntent.getActivity(context, 0, new Intent(context, RequestCoinsActivity.class), 0));
-			views.setOnClickPendingIntent(R.id.widget_button_send,
-					PendingIntent.getActivity(context, 0, new Intent(context, SendCoinsActivity.class), 0));
-			views.setOnClickPendingIntent(R.id.widget_button_send_qr,
-					PendingIntent.getActivity(context, 0, new Intent(context, SendCoinsQrActivity.class), 0));
+    @Override
+    public void onUpdate(final Context context, final AppWidgetManager appWidgetManager, final int[] appWidgetIds) {
+        final WalletApplication application = (WalletApplication) context.getApplicationContext();
+        final Wallet wallet = application.getWallet();
+        final BigInteger balance = wallet.getBalance(BalanceType.ESTIMATED);
 
-			appWidgetManager.updateAppWidget(appWidgetId, views);
-		}
-	}
+        updateWidgets(context, appWidgetManager, appWidgetIds, balance);
+    }
 }

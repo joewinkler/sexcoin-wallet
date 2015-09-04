@@ -17,9 +17,6 @@
 
 package de.schildbach.wallet.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,11 +26,12 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.google.bitcoin.core.Address;
 import com.google.bitcoin.core.ECKey;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import de.schildbach.wallet.Constants;
 import de.schildbach.wallet.util.ViewPagerTabs;
@@ -42,110 +40,95 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class AddressBookActivity extends AbstractWalletActivity
-{
-	public static void start(final Context context, final boolean sending)
-	{
-		final Intent intent = new Intent(context, AddressBookActivity.class);
-		intent.putExtra(EXTRA_SENDING, sending);
-		context.startActivity(intent);
-	}
+public final class AddressBookActivity extends AbstractWalletActivity {
+    private static final String EXTRA_SENDING = "sending";
+    private WalletAddressesFragment walletAddressesFragment;
+    private SendingAddressesFragment sendingAddressesFragment;
 
-	private static final String EXTRA_SENDING = "sending";
+    public static void start(final Context context, final boolean sending) {
+        final Intent intent = new Intent(context, AddressBookActivity.class);
+        intent.putExtra(EXTRA_SENDING, sending);
+        context.startActivity(intent);
+    }
 
-	private WalletAddressesFragment walletAddressesFragment;
-	private SendingAddressesFragment sendingAddressesFragment;
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-	@Override
-	protected void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+        setContentView(R.layout.address_book_content);
 
-		setContentView(R.layout.address_book_content);
+        final ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
+        final ViewPager pager = (ViewPager) findViewById(R.id.address_book_pager);
 
-		final ViewPager pager = (ViewPager) findViewById(R.id.address_book_pager);
+        final FragmentManager fm = getSupportFragmentManager();
 
-		final FragmentManager fm = getSupportFragmentManager();
+        if (pager != null) {
+            final ViewPagerTabs pagerTabs = (ViewPagerTabs) findViewById(R.id.address_book_pager_tabs);
+            pagerTabs.addTabLabels(R.string.address_book_list_receiving_title, R.string.address_book_list_sending_title);
 
-		if (pager != null)
-		{
-			final ViewPagerTabs pagerTabs = (ViewPagerTabs) findViewById(R.id.address_book_pager_tabs);
-			pagerTabs.addTabLabels(R.string.address_book_list_receiving_title, R.string.address_book_list_sending_title);
+            final PagerAdapter pagerAdapter = new PagerAdapter(fm);
 
-			final PagerAdapter pagerAdapter = new PagerAdapter(fm);
+            pager.setAdapter(pagerAdapter);
+            pager.setOnPageChangeListener(pagerTabs);
+            final int position = getIntent().getBooleanExtra(EXTRA_SENDING, true) ? 1 : 0;
+            pager.setCurrentItem(position);
+            pager.setPageMargin(2);
+            pager.setPageMarginDrawable(R.color.bg_less_bright);
 
-			pager.setAdapter(pagerAdapter);
-			pager.setOnPageChangeListener(pagerTabs);
-			final int position = getIntent().getBooleanExtra(EXTRA_SENDING, true) ? 1 : 0;
-			pager.setCurrentItem(position);
-			pager.setPageMargin(2);
-			pager.setPageMarginDrawable(R.color.bg_less_bright);
+            pagerTabs.onPageSelected(position);
+            pagerTabs.onPageScrolled(position, 0, 0);
 
-			pagerTabs.onPageSelected(position);
-			pagerTabs.onPageScrolled(position, 0, 0);
+            walletAddressesFragment = new WalletAddressesFragment();
+            sendingAddressesFragment = new SendingAddressesFragment();
+        } else {
+            walletAddressesFragment = (WalletAddressesFragment) fm.findFragmentById(R.id.wallet_addresses_fragment);
+            sendingAddressesFragment = (SendingAddressesFragment) fm.findFragmentById(R.id.sending_addresses_fragment);
+        }
 
-			walletAddressesFragment = new WalletAddressesFragment();
-			sendingAddressesFragment = new SendingAddressesFragment();
-		}
-		else
-		{
-			walletAddressesFragment = (WalletAddressesFragment) fm.findFragmentById(R.id.wallet_addresses_fragment);
-			sendingAddressesFragment = (SendingAddressesFragment) fm.findFragmentById(R.id.sending_addresses_fragment);
-		}
+        updateFragments();
+    }
 
-		updateFragments();
-	}
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
 
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case android.R.id.home:
-				finish();
-				return true;
-		}
+        return super.onOptionsItemSelected(item);
+    }
 
-		return super.onOptionsItemSelected(item);
-	}
+    void updateFragments() {
+        final List<ECKey> keys = getWalletApplication().getWallet().getKeys();
+        final ArrayList<Address> addresses = new ArrayList<Address>(keys.size());
 
-    void updateFragments()
-	{
-		final List<ECKey> keys = getWalletApplication().getWallet().getKeys();
-		final ArrayList<Address> addresses = new ArrayList<Address>(keys.size());
+        for (final ECKey key : keys) {
+            final Address address = key.toAddress(Constants.NETWORK_PARAMETERS);
+            addresses.add(address);
+        }
 
-		for (final ECKey key : keys)
-		{
-			final Address address = key.toAddress(Constants.NETWORK_PARAMETERS);
-			addresses.add(address);
-		}
+        sendingAddressesFragment.setWalletAddresses(addresses);
+    }
 
-		sendingAddressesFragment.setWalletAddresses(addresses);
-	}
+    private class PagerAdapter extends FragmentStatePagerAdapter {
+        public PagerAdapter(final FragmentManager fm) {
+            super(fm);
+        }
 
-	private class PagerAdapter extends FragmentStatePagerAdapter
-	{
-		public PagerAdapter(final FragmentManager fm)
-		{
-			super(fm);
-		}
+        @Override
+        public int getCount() {
+            return 2;
+        }
 
-		@Override
-		public int getCount()
-		{
-			return 2;
-		}
-
-		@Override
-		public Fragment getItem(final int position)
-		{
-			if (position == 0)
-				return walletAddressesFragment;
-			else
-				return sendingAddressesFragment;
-		}
-	}
+        @Override
+        public Fragment getItem(final int position) {
+            if (position == 0)
+                return walletAddressesFragment;
+            else
+                return sendingAddressesFragment;
+        }
+    }
 }

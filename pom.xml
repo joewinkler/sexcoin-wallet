@@ -100,7 +100,7 @@
 		<jarsigner.alias>joewinkler</jarsigner.alias>
 	</properties>
 
-	<version>0.10.7.2</version>
+	<version>0.10.7.3</version>
 	<artifactId>sexcoin-wallet</artifactId>
 	<url>sexcoin.co.in</url>
 	<organization>
@@ -113,25 +113,7 @@
 		<tag>joewinkler</tag>
 		<connection>joewinkler</connection>
 	</scm>
-	<description>Welcome to Sexcoin Wallet, a standalone Sexcoin payment app for your Android device!
-
-This is a pre-ALPHA release
-
-!!DO NOT RISK LARGE AMOUNTS OF COIN!!
-
-This project contains several sub-projects:
-
-    wallet: The Android app itself. This is probably what you're searching for.
-    market: App description and promo material for the Google Play app store.
-    integration-android: A tiny library for integrating Sexcoin payments into your own Android app (e.g. donations, in-app purchases).
-    sample-integration-android: A minimal example app to demonstrate integration of Sexcoin payments into your Android app.
-
-This project also depends on the joewinkler/bitcoinj-scrypt library. You must pull this library first and do a maven build before building 'bitcoin-wallet' This project will be refactored sometime in the future.
-
-Once bitcoinj-scrypt is built, you can build this with Maven:
-
-mvn clean install
-</description>
+	<description>Welcome to Sexcoin Wallet, a standalone Sexcoin payment app for your Android device!</description>
 	<inceptionYear>2015</inceptionYear>
 	<parent>
 		<groupId>de.schildbach.wallet</groupId>

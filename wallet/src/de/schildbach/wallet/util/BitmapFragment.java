@@ -17,8 +17,6 @@
 
 package de.schildbach.wallet.util;
 
-import javax.annotation.Nonnull;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Bitmap;
@@ -28,65 +26,60 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+
+import javax.annotation.Nonnull;
+
 import de.schildbach.wallet_sxc.R;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public class BitmapFragment extends DialogFragment
-{
-	private static final String FRAGMENT_TAG = BitmapFragment.class.getName();
+public class BitmapFragment extends DialogFragment {
+    private static final String FRAGMENT_TAG = BitmapFragment.class.getName();
 
-	private static final String KEY_BITMAP = "bitmap";
+    private static final String KEY_BITMAP = "bitmap";
+    private Activity activity;
 
-	public static void show(final FragmentManager fm, @Nonnull final Bitmap bitmap)
-	{
-		final DialogFragment newFragment = instance(bitmap);
-		newFragment.show(fm, FRAGMENT_TAG);
-	}
+    public static void show(final FragmentManager fm, @Nonnull final Bitmap bitmap) {
+        final DialogFragment newFragment = instance(bitmap);
+        newFragment.show(fm, FRAGMENT_TAG);
+    }
 
-	private static BitmapFragment instance(@Nonnull final Bitmap bitmap)
-	{
-		final BitmapFragment fragment = new BitmapFragment();
+    private static BitmapFragment instance(@Nonnull final Bitmap bitmap) {
+        final BitmapFragment fragment = new BitmapFragment();
 
-		final Bundle args = new Bundle();
-		args.putParcelable(KEY_BITMAP, bitmap);
-		fragment.setArguments(args);
+        final Bundle args = new Bundle();
+        args.putParcelable(KEY_BITMAP, bitmap);
+        fragment.setArguments(args);
 
-		return fragment;
-	}
+        return fragment;
+    }
 
-	private Activity activity;
+    @Override
+    public void onAttach(final Activity activity) {
+        super.onAttach(activity);
 
-	@Override
-	public void onAttach(final Activity activity)
-	{
-		super.onAttach(activity);
+        this.activity = activity;
+    }
 
-		this.activity = activity;
-	}
+    @Override
+    public Dialog onCreateDialog(final Bundle savedInstanceState) {
+        final Bitmap bitmap = getArguments().getParcelable(KEY_BITMAP);
 
-	@Override
-	public Dialog onCreateDialog(final Bundle savedInstanceState)
-	{
-		final Bitmap bitmap = (Bitmap) getArguments().getParcelable(KEY_BITMAP);
+        final Dialog dialog = new Dialog(activity);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.bitmap_dialog);
+        dialog.setCanceledOnTouchOutside(true);
 
-		final Dialog dialog = new Dialog(activity);
-		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		dialog.setContentView(R.layout.bitmap_dialog);
-		dialog.setCanceledOnTouchOutside(true);
+        final ImageView imageView = (ImageView) dialog.findViewById(R.id.bitmap_dialog_image);
+        imageView.setImageBitmap(bitmap);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                dismiss();
+            }
+        });
 
-		final ImageView imageView = (ImageView) dialog.findViewById(R.id.bitmap_dialog_image);
-		imageView.setImageBitmap(bitmap);
-		imageView.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(final View v)
-			{
-				dismiss();
-			}
-		});
-
-		return dialog;
-	}
+        return dialog;
+    }
 }

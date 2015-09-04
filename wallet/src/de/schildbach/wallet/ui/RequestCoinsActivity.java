@@ -28,39 +28,35 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class RequestCoinsActivity extends AbstractBindServiceActivity
-{
-	@Override
-	protected void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+public final class RequestCoinsActivity extends AbstractBindServiceActivity {
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.request_coins_content);
+        setContentView(R.layout.request_coins_content);
 
-		final ActionBar actionBar = getSupportActionBar();
-		actionBar.setDisplayHomeAsUpEnabled(true);
-	}
+        final ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(final Menu menu)
-	{
-		getSupportMenuInflater().inflate(R.menu.request_coins_activity_options, menu);
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        getSupportMenuInflater().inflate(R.menu.request_coins_activity_options, menu);
 
-		return super.onCreateOptionsMenu(menu);
-	}
+        return super.onCreateOptionsMenu(menu);
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem item)
-	{
-		int itemid = item.getItemId();
-		if(item.getItemId() == android.R.id.home){
-			finish();
-			return true;
-		}else if(itemid == R.id.request_coins_options_help){
-			HelpDialogFragment.page(getSupportFragmentManager(), R.string.help_request_coins);
-			return true;
-		}
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        int itemid = item.getItemId();
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        } else if (itemid == R.id.request_coins_options_help) {
+            HelpDialogFragment.page(getSupportFragmentManager(), R.string.help_request_coins);
+            return true;
+        }
 
-		return super.onOptionsItemSelected(item);
-	}
+        return super.onOptionsItemSelected(item);
+    }
 }

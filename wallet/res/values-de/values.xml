@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string-array name="preferences_precision_labels">
-		<item>SXC, 8 Dezimalen</item>
-		<item>SXC, 6 Dezimalen</item>
-		<item>SXC, 4 Dezimalen</item>
-		<item>mSXC, 2 Dezimalen</item>
-	</string-array>
+    <string-array name="preferences_precision_labels">
+        <item>SXC, 8 Dezimalen</item>
+        <item>SXC, 6 Dezimalen</item>
+        <item>SXC, 4 Dezimalen</item>
+        <item>mSXC, 2 Dezimalen</item>
+    </string-array>
 
 </resources>

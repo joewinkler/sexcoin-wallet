@@ -17,29 +17,26 @@
 
 package de.schildbach.wallet.ui;
 
-import javax.annotation.Nonnull;
-
 import android.text.InputType;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class ShowPasswordCheckListener implements OnCheckedChangeListener
-{
-	private EditText passwordView;
+public final class ShowPasswordCheckListener implements OnCheckedChangeListener {
+    private EditText passwordView;
 
-	public ShowPasswordCheckListener(@Nonnull final EditText passwordView)
-	{
-		this.passwordView = passwordView;
-	}
+    public ShowPasswordCheckListener(@Nonnull final EditText passwordView) {
+        this.passwordView = passwordView;
+    }
 
-	@Override
-	public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked)
-	{
-		passwordView.setInputType(InputType.TYPE_CLASS_TEXT
-				| (isChecked ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD : InputType.TYPE_TEXT_VARIATION_PASSWORD));
-	}
+    @Override
+    public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
+        passwordView.setInputType(InputType.TYPE_CLASS_TEXT
+                | (isChecked ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD : InputType.TYPE_TEXT_VARIATION_PASSWORD));
+    }
 }

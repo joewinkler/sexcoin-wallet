@@ -17,40 +17,32 @@
 
 package de.schildbach.wallet.ui;
 
-import javax.annotation.Nonnull;
-
 import com.google.bitcoin.core.Transaction;
 import com.google.bitcoin.core.VerificationException;
 import com.google.bitcoin.core.Wallet;
+
+import javax.annotation.Nonnull;
 
 import de.schildbach.wallet.WalletApplication;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public abstract class AbstractOnDemandServiceActivity extends AbstractWalletActivity
-{
-	protected void processDirectTransaction(@Nonnull final Transaction tx)
-	{
-		final Wallet wallet = getWalletApplication().getWallet();
+public abstract class AbstractOnDemandServiceActivity extends AbstractWalletActivity {
+    protected void processDirectTransaction(@Nonnull final Transaction tx) {
+        final Wallet wallet = getWalletApplication().getWallet();
 
-		try
-		{
-			if (wallet.isTransactionRelevant(tx))
-			{
-				wallet.receivePending(tx, null);
+        try {
+            if (wallet.isTransactionRelevant(tx)) {
+                wallet.receivePending(tx, null);
 
-				final WalletApplication application = (WalletApplication) getApplication();
-				application.broadcastTransaction(tx);
-			}
-			else
-			{
-				longToast("Direct transaction is not relevant for you.");
-			}
-		}
-		catch (final VerificationException x)
-		{
-			longToast("Direct transaction is not valid.");
-		}
-	}
+                final WalletApplication application = (WalletApplication) getApplication();
+                application.broadcastTransaction(tx);
+            } else {
+                longToast("Direct transaction is not relevant for you.");
+            }
+        } catch (final VerificationException x) {
+            longToast("Direct transaction is not valid.");
+        }
+    }
 }

@@ -17,69 +17,59 @@
 
 package de.schildbach.wallet.ui;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.bitcoin.core.Address;
 import com.google.bitcoin.core.AddressFormatException;
 import com.google.bitcoin.core.NetworkParameters;
-import com.google.bitcoin.core.WrongNetworkException;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public class AddressAndLabel implements Parcelable
-{
-	public final Address address;
-	public final String label;
+public class AddressAndLabel implements Parcelable {
+    public static final Parcelable.Creator<AddressAndLabel> CREATOR = new Parcelable.Creator<AddressAndLabel>() {
+        @Override
+        public AddressAndLabel createFromParcel(final Parcel in) {
+            return new AddressAndLabel(in);
+        }
 
-	public AddressAndLabel(@Nonnull final NetworkParameters addressParams, @Nonnull final String address, @Nullable final String label)
-			throws WrongNetworkException, AddressFormatException
-	{
-		this.address = new Address(addressParams, address);
-		this.label = label;
-	}
+        @Override
+        public AddressAndLabel[] newArray(final int size) {
+            return new AddressAndLabel[size];
+        }
+    };
+    public final Address address;
+    public final String label;
 
-	@Override
-	public int describeContents()
-	{
-		return 0;
-	}
+    public AddressAndLabel(@Nonnull final NetworkParameters addressParams, @Nonnull final String address, @Nullable final String label)
+            throws AddressFormatException {
+        this.address = new Address(addressParams, address);
+        this.label = label;
+    }
 
-	@Override
-	public void writeToParcel(final Parcel dest, final int flags)
-	{
-		dest.writeSerializable(address.getParameters());
-		dest.writeByteArray(address.getHash160());
+    private AddressAndLabel(final Parcel in) {
+        final NetworkParameters addressParameters = (NetworkParameters) in.readSerializable();
+        final byte[] addressHash = new byte[Address.LENGTH];
+        in.readByteArray(addressHash);
+        address = new Address(addressParameters, addressHash);
 
-		dest.writeString(label);
-	}
+        label = in.readString();
+    }
 
-	public static final Parcelable.Creator<AddressAndLabel> CREATOR = new Parcelable.Creator<AddressAndLabel>()
-	{
-		@Override
-		public AddressAndLabel createFromParcel(final Parcel in)
-		{
-			return new AddressAndLabel(in);
-		}
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-		@Override
-		public AddressAndLabel[] newArray(final int size)
-		{
-			return new AddressAndLabel[size];
-		}
-	};
+    @Override
+    public void writeToParcel(final Parcel dest, final int flags) {
+        dest.writeSerializable(address.getParameters());
+        dest.writeByteArray(address.getHash160());
 
-	private AddressAndLabel(final Parcel in)
-	{
-		final NetworkParameters addressParameters = (NetworkParameters) in.readSerializable();
-		final byte[] addressHash = new byte[Address.LENGTH];
-		in.readByteArray(addressHash);
-		address = new Address(addressParameters, addressHash);
-
-		label = in.readString();
-	}
+        dest.writeString(label);
+    }
 }

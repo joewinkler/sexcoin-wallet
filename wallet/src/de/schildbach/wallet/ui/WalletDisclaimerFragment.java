@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
 import de.schildbach.wallet.Constants;
 import de.schildbach.wallet.service.BlockchainService;
 import de.schildbach.wallet_sxc.R;
@@ -43,121 +44,107 @@ import de.schildbach.wallet_sxc.R;
 /**
  * @author Andreas Schildbach, Litecoin Dev Team
  */
-public final class WalletDisclaimerFragment extends Fragment implements OnSharedPreferenceChangeListener
-{
-	private Activity activity;
-	private SharedPreferences prefs;
+public final class WalletDisclaimerFragment extends Fragment implements OnSharedPreferenceChangeListener {
+    private final BlockchainBroadcastReceiver broadcastReceiver = new BlockchainBroadcastReceiver();
+    private Activity activity;
+    private SharedPreferences prefs;
+    private int download;
+    private TextView messageView;
 
-	private int download;
+    @Override
+    public void onAttach(final Activity activity) {
+        super.onAttach(activity);
 
-	private TextView messageView;
+        this.activity = activity;
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+    }
 
-	@Override
-	public void onAttach(final Activity activity)
-	{
-		super.onAttach(activity);
+    @Override
+    public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+        messageView = (TextView) inflater.inflate(R.layout.wallet_disclaimer_fragment, container);
 
-		this.activity = (WalletActivity) activity;
-		this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-	}
+        messageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                final boolean showBackup = prefs.getBoolean(Constants.PREFS_KEY_REMIND_BACKUP, true);
+                if (showBackup)
+                    ((WalletActivity) activity).handleExportKeys();
+                else
+                    HelpDialogFragment.page(getFragmentManager(), R.string.help_safety);
+            }
+        });
 
-	@Override
-	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState)
-	{
-		messageView = (TextView) inflater.inflate(R.layout.wallet_disclaimer_fragment, container);
+        return messageView;
+    }
 
-		messageView.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View v)
-			{
-				final boolean showBackup = prefs.getBoolean(Constants.PREFS_KEY_REMIND_BACKUP, true);
-				if (showBackup)
-					((WalletActivity) activity).handleExportKeys();
-				else
-					HelpDialogFragment.page(getFragmentManager(), R.string.help_safety);
-			}
-		});
+    @Override
+    public void onResume() {
+        super.onResume();
 
-		return messageView;
-	}
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
-	@Override
-	public void onResume()
-	{
-		super.onResume();
+        activity.registerReceiver(broadcastReceiver, new IntentFilter(BlockchainService.ACTION_BLOCKCHAIN_STATE));
 
-		prefs.registerOnSharedPreferenceChangeListener(this);
+        updateView();
+    }
 
-		activity.registerReceiver(broadcastReceiver, new IntentFilter(BlockchainService.ACTION_BLOCKCHAIN_STATE));
+    @Override
+    public void onPause() {
+        activity.unregisterReceiver(broadcastReceiver);
 
-		updateView();
-	}
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
 
-	@Override
-	public void onPause()
-	{
-		activity.unregisterReceiver(broadcastReceiver);
+        super.onPause();
+    }
 
-		prefs.unregisterOnSharedPreferenceChangeListener(this);
+    @Override
+    public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+        if (Constants.PREFS_KEY_DISCLAIMER.equals(key) || Constants.PREFS_KEY_REMIND_BACKUP.equals(key))
+            updateView();
+    }
 
-		super.onPause();
-	}
+    private void updateView() {
+        if (!isResumed())
+            return;
 
-	@Override
-	public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key)
-	{
-		if (Constants.PREFS_KEY_DISCLAIMER.equals(key) || Constants.PREFS_KEY_REMIND_BACKUP.equals(key))
-			updateView();
-	}
+        final boolean showBackup = prefs.getBoolean(Constants.PREFS_KEY_REMIND_BACKUP, true);
+        final boolean showSafety = prefs.getBoolean(Constants.PREFS_KEY_DISCLAIMER, true);
 
-	private void updateView()
-	{
-		if (!isResumed())
-			return;
+        final int progressResId;
+        if (download == BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK)
+            progressResId = 0;
+        else if ((download & BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_STORAGE_PROBLEM) != 0)
+            progressResId = R.string.blockchain_state_progress_problem_storage;
+        else if ((download & BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_NETWORK_PROBLEM) != 0)
+            progressResId = R.string.blockchain_state_progress_problem_network;
+        else
+            throw new IllegalStateException("download=" + download);
 
-		final boolean showBackup = prefs.getBoolean(Constants.PREFS_KEY_REMIND_BACKUP, true);
-		final boolean showSafety = prefs.getBoolean(Constants.PREFS_KEY_DISCLAIMER, true);
+        final SpannableStringBuilder text = new SpannableStringBuilder();
+        if (progressResId != 0)
+            text.append(Html.fromHtml("<b>" + getString(progressResId) + "</b>"));
+        if (progressResId != 0 && (showBackup || showSafety))
+            text.append('\n');
+        if (showBackup)
+            text.append(Html.fromHtml(getString(R.string.wallet_disclaimer_fragment_remind_backup)));
+        if (showBackup && showSafety)
+            text.append('\n');
+        if (showSafety)
+            text.append(Html.fromHtml(getString(R.string.wallet_disclaimer_fragment_remind_safety)));
+        messageView.setText(text);
 
-		final int progressResId;
-		if (download == BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK)
-			progressResId = 0;
-		else if ((download & BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_STORAGE_PROBLEM) != 0)
-			progressResId = R.string.blockchain_state_progress_problem_storage;
-		else if ((download & BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_NETWORK_PROBLEM) != 0)
-			progressResId = R.string.blockchain_state_progress_problem_network;
-		else
-			throw new IllegalStateException("download=" + download);
+        final View view = getView();
+        final ViewParent parent = view.getParent();
+        final View fragment = parent instanceof FrameLayout ? (FrameLayout) parent : view;
+        fragment.setVisibility(text.length() > 0 ? View.VISIBLE : View.GONE);
+    }
 
-		final SpannableStringBuilder text = new SpannableStringBuilder();
-		if (progressResId != 0)
-			text.append(Html.fromHtml("<b>" + getString(progressResId) + "</b>"));
-		if (progressResId != 0 && (showBackup || showSafety))
-			text.append('\n');
-		if (showBackup)
-			text.append(Html.fromHtml(getString(R.string.wallet_disclaimer_fragment_remind_backup)));
-		if (showBackup && showSafety)
-			text.append('\n');
-		if (showSafety)
-			text.append(Html.fromHtml(getString(R.string.wallet_disclaimer_fragment_remind_safety)));
-		messageView.setText(text);
+    private final class BlockchainBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            download = intent.getIntExtra(BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD, BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK);
 
-		final View view = getView();
-		final ViewParent parent = view.getParent();
-		final View fragment = parent instanceof FrameLayout ? (FrameLayout) parent : view;
-		fragment.setVisibility(text.length() > 0 ? View.VISIBLE : View.GONE);
-	}
-
-	private final BlockchainBroadcastReceiver broadcastReceiver = new BlockchainBroadcastReceiver();
-
-	private final class BlockchainBroadcastReceiver extends BroadcastReceiver
-	{
-		@Override
-		public void onReceive(final Context context, final Intent intent)
-		{
-			download = intent.getIntExtra(BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD, BlockchainService.ACTION_BLOCKCHAIN_STATE_DOWNLOAD_OK);
-
-			updateView();
-		}
-	}
+            updateView();
+        }
+    }
 }
